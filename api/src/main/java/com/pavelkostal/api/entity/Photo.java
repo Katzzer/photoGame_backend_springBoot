@@ -1,6 +1,7 @@
 package com.pavelkostal.api.entity;
 
-import javax.persistence.*;
+
+import jakarta.persistence.*;
 
 @Entity
 public class Photo {
