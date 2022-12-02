@@ -12,8 +12,20 @@ public class Photo {
     @Column(name = "photo", nullable = false)
     private String photoAsString;
 
-    @Column(name = "gps_position")
-    private String gpsPosition;
+    @Column(name = "gps_position_latitude")
+    private double gpsPositionLatitude;
+
+    @Column(name = "gps_position_longitude")
+    private double gpsPositionLongitude;
+
+    public Photo() {
+    }
+
+    public Photo(String photoAsString, double gpsPositionLatitude, double gpsPositionLongitude) {
+        this.photoAsString = photoAsString;
+        this.gpsPositionLatitude = gpsPositionLatitude;
+        this.gpsPositionLongitude = gpsPositionLongitude;
+    }
 
     public Long getId() {
         return id;
@@ -31,11 +43,19 @@ public class Photo {
         this.photoAsString = photoAsString;
     }
 
-    public String getGpsPosition() {
-        return gpsPosition;
+    public double getGpsPositionLatitude() {
+        return gpsPositionLatitude;
     }
 
-    public void setGpsPosition(String gpsPosition) {
-        this.gpsPosition = gpsPosition;
+    public void setGpsPositionLatitude(double gpsPosition) {
+        this.gpsPositionLatitude = gpsPosition;
+    }
+
+    public double getGpsPositionLongitude() {
+        return gpsPositionLongitude;
+    }
+
+    public void setGpsPositionLongitude(double gpsPositionLongitude) {
+        this.gpsPositionLongitude = gpsPositionLongitude;
     }
 }
