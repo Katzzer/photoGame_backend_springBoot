@@ -34,4 +34,9 @@ public class ApiController {
         photoService.savePhoto(photo);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
+
+    @GetMapping(path = "/hello")
+    public String getResp(){
+        return  "Hey authenticated request!";
+    }
 }
