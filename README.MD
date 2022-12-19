@@ -9,3 +9,16 @@
 ## More info
 - H2 database runs on `http://localhost:8080/h2-console`
 - Basic api url is `http://localhost:8080/api/v1/data`
+
+## Docker
+
+## Create Docker image
+- To push image to Dockerhub you have to be logged with Dockerhub account (we won't use this way in future)
+- To create docker image go to the directory where is selected microservice and type:
+`mvn clean package -P build-docker-image`
+  - In IntelliJ Idea go to Maven - select profile `build-docker-image`. In lifecycle click on `package`.
+- This will create and push image to Dockerhub
+
+### Run all application
+- for that is needed only `docker-compose.yml` file
+- In root directory of this project in command line type `docker-compose -f docker-compose.yml up -d`
