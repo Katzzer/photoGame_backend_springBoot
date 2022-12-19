@@ -15,8 +15,8 @@ services:
 #    restart: unless-stopped
   
   api:
-    image: pavelkostal/api:latest
-    container_name: api
+    image: pavelkostal/photogamebackendapi:latest
+    container_name: photo-game-backend-api
     ports:
       - "8080:8080"
     environment:
