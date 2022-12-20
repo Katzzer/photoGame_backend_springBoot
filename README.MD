@@ -22,3 +22,5 @@
 ### Run all application
 - for that is needed only `docker-compose.yml` file
 - In root directory of this project in command line type `docker-compose -f docker-compose.yml up -d`
+- To stop app type `docker-compose down`
+- 
