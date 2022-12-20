@@ -34,4 +34,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: pavelkostal/photogamebackendapi:latest
+          tags: pavelkostal/photo-game-backend-api:latest
