@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 @RestController()
 @RequestMapping("api/v1/data")
 @AllArgsConstructor
+@CrossOrigin()
 public class ApiController {
 
     private final PhotoService photoService;
