@@ -1,9 +1,10 @@
 package com.pavelkostal.api.security;
 
+import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,13 +16,11 @@ import java.util.List;
 import static java.util.List.of;
 
 @Component
+@AllArgsConstructor
 public class AwsCognitoIdTokenProcessor {
 
-    @Autowired
     private JwtConfiguration jwtConfiguration;
-
-    @Autowired
-    private ConfigurableJWTProcessor configurableJWTProcessor;
+    private ConfigurableJWTProcessor<SecurityContext> configurableJWTProcessor;
 
     public Authentication authenticate(HttpServletRequest request) throws Exception {
         String idToken = request.getHeader(this.jwtConfiguration.getHttpHeader());

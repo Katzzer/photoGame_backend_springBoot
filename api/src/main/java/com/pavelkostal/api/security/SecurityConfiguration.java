@@ -1,6 +1,6 @@
 package com.pavelkostal.api.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,9 +10,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
+@AllArgsConstructor
 public class SecurityConfiguration {
 
-	@Autowired
 	private AwsCognitoJwtAuthFilter awsCognitoJwtAuthenticationFilter;
 
 	@Bean
