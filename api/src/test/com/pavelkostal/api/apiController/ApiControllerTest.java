@@ -30,7 +30,7 @@ class ApiControllerTest {
     PhotoService photoService;
 
     @BeforeEach
-    private void beforeEach() {
+    public void beforeEach() {
 
     }
 
@@ -38,7 +38,7 @@ class ApiControllerTest {
     @DisplayName("Test saveImage endpoint")
     void itShouldTesSaveImageApiEndpoint() throws Exception {
         // Given
-        Photo testingPhoto = new Photo("aabbcc", 50.2092567, 15.8327564);
+        Photo testingPhoto = new Photo("aabbcc", 50.2092567, 15.8327564, "aaa");
         ObjectMapper objectMapper = new ObjectMapper();
 
         // When

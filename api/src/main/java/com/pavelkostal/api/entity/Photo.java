@@ -19,16 +19,20 @@ public class Photo implements ResponsePhoto {
 
     @Column(name = "gps_position_longitude")
     private double gpsPositionLongitude;
+    
+    @Column(name = "uniquer_user_id")
+    private String uniqueUserId;
 
     public Photo() {
     }
-
-    public Photo(String photoAsString, double gpsPositionLatitude, double gpsPositionLongitude) {
+    
+    public Photo(String photoAsString, double gpsPositionLatitude, double gpsPositionLongitude, String uniqueUserId) {
         this.photoAsString = photoAsString;
         this.gpsPositionLatitude = gpsPositionLatitude;
         this.gpsPositionLongitude = gpsPositionLongitude;
+        this.uniqueUserId = uniqueUserId;
     }
-
+    
     public Long getId() {
         return id;
     }
@@ -59,5 +63,13 @@ public class Photo implements ResponsePhoto {
 
     public void setGpsPositionLongitude(double gpsPositionLongitude) {
         this.gpsPositionLongitude = gpsPositionLongitude;
+    }
+    
+    public String getUniqueUserId() {
+        return uniqueUserId;
+    }
+    
+    public void setUniqueUserId(String uniqueUserId) {
+        this.uniqueUserId = uniqueUserId;
     }
 }
