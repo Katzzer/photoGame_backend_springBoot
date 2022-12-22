@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @RestController()
 @RequestMapping("api/v1/data")
@@ -39,4 +40,16 @@ public class ApiController {
         ResponsePhoto response = new ResponsePhoto(savePhotoId, ResponseMessages.PHOTO_SAVED.toString());
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
+    
+    @GetMapping("/image/{imageId}")
+    public String getImageById(@PathVariable Long imageId) {
+        Optional<Photo> imageById = photoService.getImageById(imageId);
+        
+        if (imageById.isEmpty()) {
+            return "";
+        }
+        
+        return imageById.get().getPhotoAsString();
+    }
+    
 }

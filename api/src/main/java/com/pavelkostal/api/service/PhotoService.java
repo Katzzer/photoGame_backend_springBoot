@@ -5,6 +5,8 @@ import com.pavelkostal.api.repository.PhotoRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @AllArgsConstructor
 public class PhotoService {
@@ -14,5 +16,9 @@ public class PhotoService {
     public long savePhoto(Photo photo) {
         Photo savedPhoto = photoRepository.save(photo);
         return savedPhoto.getId();
+    }
+    
+    public Optional<Photo> getImageById(long imageId) {
+        return photoRepository.findById(imageId);
     }
 }
