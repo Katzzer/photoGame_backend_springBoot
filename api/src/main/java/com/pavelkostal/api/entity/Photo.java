@@ -1,10 +1,11 @@
 package com.pavelkostal.api.entity;
 
 
+import com.pavelkostal.api.model.ResponsePhoto;
 import jakarta.persistence.*;
 
 @Entity
-public class Photo {
+public class Photo implements ResponsePhoto {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)

@@ -18,7 +18,7 @@ public class PhotoService {
         return savedPhoto.getId();
     }
     
-    public Optional<Photo> getImageById(long imageId) {
+    public Optional<Photo> getPhotoById(long imageId) {
         return photoRepository.findById(imageId);
     }
 }
