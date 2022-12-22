@@ -1,5 +1,10 @@
 # Photo Game - Backend Application written in Java with Spring Boot
 
+## TODO
+- Add tests
+- Repair tests
+- Add Swagger
+
 ## Module description
 - api - used for api communication
 
