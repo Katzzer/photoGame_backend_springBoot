@@ -19,8 +19,10 @@ public class SecurityConfiguration {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 				.cors().and()
-				.authorizeHttpRequests((authz) -> authz
+				.csrf().disable()
+				.authorizeHttpRequests((auth) -> auth
 						.anyRequest().authenticated()
+						.and()
 				)
 				.addFilterBefore(awsCognitoJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 				.httpBasic(withDefaults());

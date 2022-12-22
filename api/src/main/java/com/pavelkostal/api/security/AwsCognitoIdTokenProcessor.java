@@ -30,7 +30,7 @@ public class AwsCognitoIdTokenProcessor {
             verifyIfIdToken(claims);
             String username = getUserNameFrom(claims);
             if (username != null) {
-                List<GrantedAuthority> grantedAuthorities = of( new SimpleGrantedAuthority("ROLE_ADMIN"));
+                List<GrantedAuthority> grantedAuthorities = of( new SimpleGrantedAuthority("ROLE_USER"));
                 User user = new User(username, "", of());
                 return new JwtAuthentication(user, claims, grantedAuthorities);
             }

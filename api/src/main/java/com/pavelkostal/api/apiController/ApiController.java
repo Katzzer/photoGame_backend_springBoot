@@ -1,6 +1,8 @@
 package com.pavelkostal.api.apiController;
 
+import com.pavelkostal.api.constants.ResponseMessages;
 import com.pavelkostal.api.entity.Photo;
+import com.pavelkostal.api.model.ResponsePhoto;
 import com.pavelkostal.api.service.PhotoService;
 import com.pavelkostal.api.tool.Tools;
 import lombok.AllArgsConstructor;
@@ -27,17 +29,14 @@ public class ApiController {
     }
 
     @PostMapping()
-    public ResponseEntity<Photo> saveImage(@RequestBody Photo photo) {
+    @ResponseBody
+    public ResponseEntity<ResponsePhoto> saveImage(@RequestBody Photo photo) {
         if (!Tools.isValidGps(photo.getGpsPositionLatitude(), photo.getGpsPositionLongitude())) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ResponsePhoto(null, ResponseMessages.INVALID_GPS.toString()), HttpStatus.BAD_REQUEST);
         }
-
-        photoService.savePhoto(photo);
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
-    }
-
-    @GetMapping(path = "/hello")
-    public String getResp(){
-        return  "Hey authenticated request!";
+    
+        long savePhotoId = photoService.savePhoto(photo);
+        ResponsePhoto response = new ResponsePhoto(savePhotoId, ResponseMessages.PHOTO_SAVED.toString());
+        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
 }

@@ -11,7 +11,8 @@ public class PhotoService {
 
     private final PhotoRepository photoRepository;
 
-    public void savePhoto(Photo photo) {
-        photoRepository.save(photo);
+    public long savePhoto(Photo photo) {
+        Photo savedPhoto = photoRepository.save(photo);
+        return savedPhoto.getId();
     }
 }
