@@ -21,6 +21,7 @@ public class SecurityConfiguration {
 				.cors().and()
 				.csrf().disable()
 				.authorizeHttpRequests((auth) -> auth
+						.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 						.anyRequest().authenticated()
 						.and()
 				)
