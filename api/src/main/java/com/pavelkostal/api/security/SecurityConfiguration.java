@@ -23,7 +23,6 @@ public class SecurityConfiguration {
 				.authorizeHttpRequests((auth) -> auth
 						.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 						.anyRequest().authenticated()
-						.and()
 				)
 				.addFilterBefore(awsCognitoJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 				.httpBasic(withDefaults());
