@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @AllArgsConstructor
@@ -24,8 +23,7 @@ public class SecurityConfiguration {
 						.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 						.anyRequest().authenticated()
 				)
-				.addFilterBefore(awsCognitoJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-				.httpBasic(withDefaults());
+				.addFilterBefore(awsCognitoJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
 
