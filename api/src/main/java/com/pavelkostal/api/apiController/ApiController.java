@@ -7,8 +7,8 @@ import com.pavelkostal.api.entity.Photo;
 import com.pavelkostal.api.model.ResponsePhoto;
 import com.pavelkostal.api.model.ResponsePhotoSaved;
 import com.pavelkostal.api.service.PhotoService;
-import com.pavelkostal.api.tool.TokenTool;
-import com.pavelkostal.api.tool.Tools;
+import com.pavelkostal.api.tools.TokenTool;
+import com.pavelkostal.api.tools.Tools;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +47,10 @@ public class ApiController {
     
         if (!Tools.isValidGps(photo.getGpsPositionLatitude(), photo.getGpsPositionLongitude())) {
             return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS.toString()), HttpStatus.BAD_REQUEST);
+        }
+        
+        if (!Tools.isValidImage(photo.getPhotoAsString())) {
+            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_IMAGE.toString()), HttpStatus.BAD_REQUEST);
         }
     
         long savePhotoId = photoService.savePhoto(photo);

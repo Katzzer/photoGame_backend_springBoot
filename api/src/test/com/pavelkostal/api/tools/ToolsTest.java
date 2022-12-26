@@ -1,4 +1,4 @@
-package com.pavelkostal.api.tool;
+package com.pavelkostal.api.tools;
 
 import org.junit.jupiter.api.Test;
 

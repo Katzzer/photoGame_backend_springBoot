@@ -11,7 +11,7 @@ public class Photo implements ResponsePhoto {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "photo", nullable = false)
+    @Column(name = "photo", nullable = false, columnDefinition = "text")
     private String photoAsString;
 
     @Column(name = "gps_position_latitude")
