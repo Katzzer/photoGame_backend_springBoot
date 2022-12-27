@@ -2,8 +2,6 @@
 
 ## TODO
 - Add tests
-- Repair tests
-- Remove Admin Password (won't work anyway)
 
 ## Module description
 - api - used for api communication
