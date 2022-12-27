@@ -1,6 +1,8 @@
 package com.pavelkostal.api.tools;
 
 public class Tools {
+    
+    private Tools() {}
 
     public static boolean isValidGps(double latitude, double longitude) {
         if (latitude < -90 || latitude > 90) return false;

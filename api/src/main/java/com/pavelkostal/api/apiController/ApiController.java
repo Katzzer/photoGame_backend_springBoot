@@ -77,4 +77,14 @@ public class ApiController {
         return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);
     }
     
+    @PostMapping("/aaa")
+    @ResponseBody
+    public ResponseEntity<ResponsePhoto> saveImage(
+//            @RequestBody Photo photo
+    ) throws BadJOSEException, ParseException, JOSEException {
+        
+        ResponsePhotoSaved response = new ResponsePhotoSaved(1L, ResponseMessages.PHOTO_SAVED.toString());
+        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+    }
+    
 }
