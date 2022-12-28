@@ -1,7 +1,7 @@
 # Photo Game - Backend Application written in Java with Spring Boot
 
 ## TODO
-- Add tests
+- Add tests to JWT
 
 ## Module description
 - api - used for api communication
