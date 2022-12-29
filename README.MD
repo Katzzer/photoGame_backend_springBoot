@@ -29,3 +29,9 @@
 
 ## Swagger Documentation
 - Go to page [localhost:8080/swagger-ui/](http://localhost:8080/swagger-ui/)
+
+## External GPS position check:
+- Go to page [Position stack](https://positionstack.com/)
+- Api Access key is `9a78eefebbaee92c86702374251227ac`
+- Example request: `http://api.positionstack.com/v1/forward?access_key=9a78eefebbaee92c86702374251227ac&query=Hradec Kralove`
+
