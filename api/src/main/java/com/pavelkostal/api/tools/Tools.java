@@ -1,5 +1,10 @@
 package com.pavelkostal.api.tools;
 
+import com.pavelkostal.api.entity.Photo;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Tools {
 
     public static boolean isValidGps(double latitude, double longitude) {
@@ -18,5 +23,19 @@ public class Tools {
                     null;
         };
         return extension != null;
+    }
+
+    public static String replaceSpaceWithUnderscore(String text) {
+        return text.replace(" ", "_");
+    }
+
+    public static List<Photo> replaceUnderscoreWithSpace(List<Photo> listOfPhotos) {
+        List<Photo> newList = new ArrayList<>();
+        for (Photo photo : listOfPhotos) {
+            photo.setCity(photo.getCity().replace("_", " "));
+            newList.add(photo);
+        }
+
+        return newList;
     }
 }

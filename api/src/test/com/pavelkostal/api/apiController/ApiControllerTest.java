@@ -52,7 +52,7 @@ class ApiControllerTest {
     @WithMockUser
     void itShouldTesSaveImageApiEndpoint() throws Exception {
         // Given
-        Photo testingPhoto = new Photo("data:image/jpeg;base64,someValue", 50.2092567, 15.8327564, "aaa");
+        Photo testingPhoto = new Photo("data:image/jpeg;base64,someValue", 50.2092567, 15.8327564, "Hradec Kralove","aaa");
         ObjectMapper objectMapper = new ObjectMapper();
 
         // When
@@ -72,7 +72,7 @@ class ApiControllerTest {
     @WithMockUser
     void itShouldTesSaveImageApiEndpointWithInvalidGps() throws Exception {
         // Given
-        Photo testingPhoto = new Photo("data:image/jpeg;base64,someValue", 5000.2092567, 15.8327564, "aaa");
+        Photo testingPhoto = new Photo("data:image/jpeg;base64,someValue", 5000.2092567, 15.8327564,"Hradec Kralove", "aaa");
         ObjectMapper objectMapper = new ObjectMapper();
 
         // When
@@ -92,7 +92,7 @@ class ApiControllerTest {
     @WithMockUser
     void itShouldTesSaveImageApiEndpointWithInvalidPhoto() throws Exception {
         // Given
-        Photo testingPhoto = new Photo("someValue", 50.2092567, 15.8327564, "aaa");
+        Photo testingPhoto = new Photo("someValue", 50.2092567, 15.8327564,"Hradec Kralove", "aaa");
         ObjectMapper objectMapper = new ObjectMapper();
 
         // When
@@ -112,7 +112,7 @@ class ApiControllerTest {
     @WithMockUser
     void itShouldTestGetImageEndPoint() throws Exception {
         // Given
-        Photo testingPhoto = new Photo("someValue", 50.2092567, 15.8327564, "aaa");
+        Photo testingPhoto = new Photo("someValue", 50.2092567, 15.8327564,"Hradec Kralove", "aaa");
         long id = 1;
 
         // When
@@ -145,8 +145,8 @@ class ApiControllerTest {
     @DisplayName("Test images ID endpoint for current user ")
     @WithMockUser
     void itShouldTestGetImagesEndPoint() throws Exception {
-        Photo testingPhoto1 = new Photo("someValue1", 50.2092567, 15.8327564, "aaa");
-        Photo testingPhoto2 = new Photo("someValue2", 50.2092567, 15.8327564, "aaa");
+        Photo testingPhoto1 = new Photo("someValue1", 50.2092567, 15.8327564, "Hradec Kralove", "aaa");
+        Photo testingPhoto2 = new Photo("someValue2", 50.2092567, 15.8327564, "Nove Mesto", "aaa");
 
         // When
         when(photoService.getAllImagesForSelectedUser(any())).thenReturn(List.of(testingPhoto1, testingPhoto2));

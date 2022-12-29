@@ -1,6 +1,9 @@
 package com.pavelkostal.api.tools;
 
+import com.pavelkostal.api.entity.Photo;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,5 +54,37 @@ class ToolsTest {
         assertTrue(validImageJpg);
         assertTrue(validImagePng);
         assertFalse(invalidImage);
+    }
+
+    @Test
+    void testReplaceSpaceWithUnderscore() {
+        // Given
+        String city = "Hradec Kralove";
+
+        // When
+        String cityWithUnderscore = Tools.replaceSpaceWithUnderscore(city);
+
+        // Then
+        String expectedValue = "Hradec_Kralove";
+        assertEquals(cityWithUnderscore, expectedValue);
+    }
+
+    @Test
+    void testReplaceUnderscoreWithSpace() {
+        // Given
+        String city1 = "Hradec_Kralove";
+        String city2 = "Nove_Mesto";
+        Photo photo1 = new Photo("aaa", 15, 15, city1, "123");
+        Photo photo2 = new Photo("aaa", 1, 1, city2, "123");
+        List<Photo> photos = List.of(photo1, photo2);
+
+        // When
+        List<Photo> photosWithSpace = Tools.replaceUnderscoreWithSpace(photos);
+
+        // Then
+        String city1WithSpace = "Hradec Kralove";
+        String city2WithSpace = "Nove Mesto";
+        assertEquals(photosWithSpace.get(0).getCity(), city1WithSpace);
+        assertEquals(photosWithSpace.get(1).getCity(), city2WithSpace);
     }
 }

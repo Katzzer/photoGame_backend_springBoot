@@ -52,7 +52,7 @@ public class ApiController {
         if (!Tools.isValidImage(photo.getPhotoAsString())) {
             return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_IMAGE.toString()), HttpStatus.BAD_REQUEST);
         }
-    
+
         long savePhotoId = photoService.savePhoto(photo);
         ResponsePhotoSaved response = new ResponsePhotoSaved(savePhotoId, ResponseMessages.PHOTO_SAVED.toString());
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
@@ -74,6 +74,13 @@ public class ApiController {
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
         List<Photo> allImagesForUser = photoService.getAllImagesForSelectedUser(uniqueUserId);
     
+        return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);
+    }
+
+    @GetMapping("/images/{city}")
+    public ResponseEntity<List<Photo>> getAllImagesByCity(@PathVariable String city) {
+        List<Photo> allImagesForUser = photoService.getAllImagesByCity(city);
+
         return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);
     }
     
