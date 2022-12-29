@@ -5,6 +5,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,7 +23,7 @@ public class AwsCognitoIdTokenProcessor {
     private JwtConfiguration jwtConfiguration;
     private ConfigurableJWTProcessor<SecurityContext> configurableJWTProcessor;
 
-    public Authentication authenticate(HttpServletRequest request) throws Exception {
+    public Authentication authenticate(@NotNull HttpServletRequest request) throws Exception {
         String idToken = request.getHeader(this.jwtConfiguration.getHttpHeader());
         if (idToken != null) {
             JWTClaimsSet claims = configurableJWTProcessor.process(getBearerToken(idToken),null);
