@@ -89,5 +89,11 @@ public class ApiController {
 
         return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);
     }
+
+    @GetMapping("/list-of-cities/")
+    public ResponseEntity<List<String>> getAllCityInDb() {
+        List<String> allCityInDb = photoService.getAllCityInDb();
+        return new ResponseEntity<>(Tools.replaceUnderscoreWithSpaceForString(allCityInDb), HttpStatus.OK);
+    }
     
 }

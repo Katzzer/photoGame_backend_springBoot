@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -33,5 +34,12 @@ public class PhotoService {
         city = Tools.replaceSpaceWithUnderscore(city);
         List<Photo> photosByCity = photoRepository.findPhotosByCity(city);
         return Tools.replaceUnderscoreWithSpace(photosByCity);
+    }
+
+    public List<String> getAllCityInDb() {
+        List<String> allCity = photoRepository.getAllCity();
+        return allCity.stream()
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

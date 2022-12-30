@@ -38,4 +38,13 @@ public class Tools {
 
         return newList;
     }
+
+    public static List<String> replaceUnderscoreWithSpaceForString(List<String> listOfCity) {
+        List<String> newList = new ArrayList<>();
+        for (String city : listOfCity) {
+            newList.add(city.replace("_", " "));
+        }
+
+        return newList;
+    }
 }

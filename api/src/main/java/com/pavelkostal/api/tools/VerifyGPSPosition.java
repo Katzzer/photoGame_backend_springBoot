@@ -18,7 +18,13 @@ public class VerifyGPSPosition {
     String positionStackAccessKey;
 
     public boolean isValidGPSPositionAtEnteredCity(Photo photo) {
-        PositionStackResponseData data = positionStack.getData(positionStackAccessKey, photo.getCity());
+        PositionStackResponseData data;
+
+        try {
+            data = positionStack.getData(positionStackAccessKey, photo.getCity());
+        } catch (Exception e) {
+            return false;
+        }
 
         for (PositionStackResponse values : data.data()) {
             double latitudeOfEnteredCity = values.latitude();

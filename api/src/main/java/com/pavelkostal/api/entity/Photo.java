@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
+@Table(name = "photo")
 @Getter
 @Setter
 public class Photo implements ResponsePhoto {
