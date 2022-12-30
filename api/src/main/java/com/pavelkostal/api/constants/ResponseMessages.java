@@ -4,6 +4,7 @@ public enum ResponseMessages {
 	
 	PHOTO_SAVED("Photo Saved"),
 	INVALID_GPS("Invalid GPS coordination's"),
+	INVALID_GPS_AT_CITY("Invalid GPS coordination's at selected city"),
 	INVALID_IMAGE("Invalid Image");
 	
 	private final String message;
