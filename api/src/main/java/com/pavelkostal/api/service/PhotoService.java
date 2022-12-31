@@ -2,6 +2,7 @@ package com.pavelkostal.api.service;
 
 import com.pavelkostal.api.entity.Photo;
 import com.pavelkostal.api.repository.PhotoRepository;
+import com.pavelkostal.api.repository.PositionRepository;
 import com.pavelkostal.api.tools.Tools;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,12 @@ import java.util.stream.Collectors;
 public class PhotoService {
 
     private final PhotoRepository photoRepository;
+    private final PositionRepository positionRepository;
 
     public long savePhoto(Photo photo) {
-        photo.setCity(Tools.replaceSpaceWithUnderscore(photo.getCity()));
-        Photo savedPhoto = photoRepository.save(photo);
+        Photo photoWithCorrectCityName = Tools.replaceSpaceWithUnderscore(photo);
+
+        Photo savedPhoto = photoRepository.save(photoWithCorrectCityName);
         return savedPhoto.getId();
     }
     
@@ -30,14 +33,14 @@ public class PhotoService {
         return photoRepository.findPhotosByUniqueUserId(uniqueUserId);
     }
 
-    public List<Photo> getAllImagesByCity(String city) {
+    public List<Photo> getAllPhotosByCity(String city) {
         city = Tools.replaceSpaceWithUnderscore(city);
-        List<Photo> photosByCity = photoRepository.findPhotosByCity(city);
+        List<Photo> photosByCity = photoRepository.findByCity(city);
         return Tools.replaceUnderscoreWithSpace(photosByCity);
     }
 
     public List<String> getAllCityInDb() {
-        List<String> allCity = photoRepository.getAllCity();
+        List<String> allCity = positionRepository.getAllCity();
         return allCity.stream()
                 .distinct()
                 .collect(Collectors.toList());

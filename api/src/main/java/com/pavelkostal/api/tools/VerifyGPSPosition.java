@@ -21,7 +21,7 @@ public class VerifyGPSPosition {
         PositionStackResponseData data;
 
         try {
-            data = positionStack.getData(positionStackAccessKey, photo.getCity());
+            data = positionStack.getData(positionStackAccessKey, photo.getPosition().getCity());
         } catch (Exception e) {
             return false;
         }
@@ -29,8 +29,8 @@ public class VerifyGPSPosition {
         for (PositionStackResponse values : data.data()) {
             double latitudeOfEnteredCity = values.latitude();
             double longitudeOfEnteredCity = values.longitude();
-            double latitudeFromPhoto = photo.getGpsPositionLatitude();
-            double longitudeFromPhoto = photo.getGpsPositionLongitude();
+            double latitudeFromPhoto = photo.getPosition().getGpsPositionLatitude();
+            double longitudeFromPhoto = photo.getPosition().getGpsPositionLongitude();
 
             double distance = distance(latitudeOfEnteredCity, latitudeFromPhoto, longitudeOfEnteredCity, longitudeFromPhoto, 0, 0);
             if (distance < 50000) {

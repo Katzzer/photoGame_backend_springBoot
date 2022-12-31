@@ -47,7 +47,7 @@ public class ApiController {
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
         photo.setUniqueUserId(uniqueUserId);
     
-        if (!Tools.isValidGps(photo.getGpsPositionLatitude(), photo.getGpsPositionLongitude())) {
+        if (!Tools.isValidGps(photo.getPosition().getGpsPositionLatitude(), photo.getPosition().getGpsPositionLongitude())) {
             return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS.toString()), HttpStatus.BAD_REQUEST);
         }
         
@@ -85,7 +85,7 @@ public class ApiController {
 
     @GetMapping("/images/{city}")
     public ResponseEntity<List<Photo>> getAllImagesByCity(@PathVariable String city) {
-        List<Photo> allImagesForUser = photoService.getAllImagesByCity(city);
+        List<Photo> allImagesForUser = photoService.getAllPhotosByCity(city);
 
         return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);
     }

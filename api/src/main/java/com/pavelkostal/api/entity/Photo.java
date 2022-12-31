@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
+@Entity(name = "Photo")
 @Table(name = "photo")
 @Getter
 @Setter
@@ -19,26 +19,24 @@ public class Photo implements ResponsePhoto {
     @Column(name = "photo", nullable = false, columnDefinition = "text")
     private String photoAsString;
 
-    @Column(name = "gps_position_latitude")
-    private double gpsPositionLatitude;
-
-    @Column(name = "gps_position_longitude")
-    private double gpsPositionLongitude;
-
-    @Column(name = "city")
-    private String city;
-    
-    @Column(name = "uniquer_user_id")
+    @Column(name = "uniquer_user_id", nullable = false, columnDefinition = "text")
     private String uniqueUserId;
+
+    @OneToOne(
+            mappedBy = "photo",
+            orphanRemoval = true,
+            cascade = {CascadeType.ALL},
+            fetch = FetchType.EAGER
+    )
+    private Position position;
 
     public Photo() {
     }
 
-    public Photo(String photoAsString, double gpsPositionLatitude, double gpsPositionLongitude, String city, String uniqueUserId) {
+    public Photo(String photoAsString, String uniqueUserId, Position position) {
         this.photoAsString = photoAsString;
-        this.gpsPositionLatitude = gpsPositionLatitude;
-        this.gpsPositionLongitude = gpsPositionLongitude;
-        this.city = city;
         this.uniqueUserId = uniqueUserId;
+        this.position = position;
     }
+
 }
