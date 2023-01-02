@@ -1,6 +1,6 @@
 package com.pavelkostal.api.model;
 
-public record PositionStackResponse(
+public record PositionStackResponseDataValues(
         double latitude,
         double longitude,
         String type,

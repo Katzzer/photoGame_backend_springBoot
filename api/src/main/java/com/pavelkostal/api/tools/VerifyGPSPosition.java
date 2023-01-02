@@ -1,9 +1,10 @@
 package com.pavelkostal.api.tools;
 
 import com.pavelkostal.api.entity.Photo;
+import com.pavelkostal.api.entity.Position;
 import com.pavelkostal.api.externalApiCalls.PositionStack;
-import com.pavelkostal.api.model.PositionStackResponse;
-import com.pavelkostal.api.model.PositionStackResponseData;
+import com.pavelkostal.api.model.PositionStackResponseDataValues;
+import com.pavelkostal.api.model.PositionStackResponseDataWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -18,15 +19,15 @@ public class VerifyGPSPosition {
     String positionStackAccessKey;
 
     public boolean isValidGPSPositionAtEnteredCity(Photo photo) {
-        PositionStackResponseData data;
+        PositionStackResponseDataWrapper data;
 
         try {
-            data = positionStack.getData(positionStackAccessKey, photo.getPosition().getCity());
+            data = positionStack.getDataByCity(positionStackAccessKey, photo.getPosition().getCity());
         } catch (Exception e) {
             return false;
         }
 
-        for (PositionStackResponse values : data.data()) {
+        for (PositionStackResponseDataValues values : data.data()) {
             double latitudeOfEnteredCity = values.latitude();
             double longitudeOfEnteredCity = values.longitude();
             double latitudeFromPhoto = photo.getPosition().getGpsPositionLatitude();
@@ -39,6 +40,37 @@ public class VerifyGPSPosition {
         }
 
         return false;
+    }
+    
+    public Position getPositionFromGps(Photo photo) {
+        String query = photo.getPosition().getGpsPositionLatitude() + ", " + photo.getPosition().getGpsPositionLongitude();
+
+        PositionStackResponseDataWrapper dataByGps = positionStack.getDataByGps(positionStackAccessKey, query);
+        String region = "";
+        String locality = "";
+        String country = "";
+        String continent = "";
+
+        for (PositionStackResponseDataValues values : dataByGps.data()) {
+            if (region.equals("") && !values.region().equals("null")) {
+                region = values.region();
+            }
+
+            if (locality.equals("") && !values.locality().equals("null")) {
+                locality = values.locality();
+            }
+
+            if (country.equals("") && !values.country().equals("null")) {
+                country = values.country();
+            }
+            
+            if (continent.equals("") && !values.continent().equals("null")) {
+                continent = values.continent();
+            }
+            
+        }
+        
+        return new Position(photo.getPosition().getGpsPositionLatitude(), photo.getPosition().getGpsPositionLongitude(), photo.getPosition().getCity(), region, locality, country, continent);
     }
 
     /**

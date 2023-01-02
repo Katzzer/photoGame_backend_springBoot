@@ -46,9 +46,13 @@ public class ApiController {
     
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
         photo.setUniqueUserId(uniqueUserId);
+
+        if (photo.getPosition() == null) {
+            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS.toString()), HttpStatus.BAD_REQUEST);
+        }
     
         if (!Tools.isValidGps(photo.getPosition().getGpsPositionLatitude(), photo.getPosition().getGpsPositionLongitude())) {
-            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS.toString()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.NO_GPS.toString()), HttpStatus.BAD_REQUEST);
         }
         
         if (!Tools.isValidImage(photo.getPhotoAsString())) {
@@ -58,7 +62,9 @@ public class ApiController {
         if (!verifyGPSPosition.isValidGPSPositionAtEnteredCity(photo)) {
             return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS_AT_CITY.toString()), HttpStatus.BAD_REQUEST);
         }
-
+        
+        photo.setPosition(verifyGPSPosition.getPositionFromGps(photo));
+        
         long savePhotoId = photoService.savePhoto(photo);
         ResponsePhotoSaved response = new ResponsePhotoSaved(savePhotoId, ResponseMessages.PHOTO_SAVED.toString());
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
