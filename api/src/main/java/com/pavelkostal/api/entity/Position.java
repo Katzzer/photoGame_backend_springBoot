@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
+@Entity(name = "Position")
 @Table(name = "position")
 @Getter
 @Setter
@@ -34,17 +34,6 @@ public class Position {
 
     @Column(name = "continent", nullable = false, columnDefinition = "text")
     private String continent;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(
-            name = "positon_id",
-            referencedColumnName = "id",
-            foreignKey = @ForeignKey(
-                    name = "position_id_fk"
-            )
-
-    )
-    private Photo photo;
 
     public Position() {
     }

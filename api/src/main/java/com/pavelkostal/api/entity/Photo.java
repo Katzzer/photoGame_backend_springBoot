@@ -23,10 +23,12 @@ public class Photo implements ResponsePhoto {
     private String uniqueUserId;
 
     @OneToOne(
-            mappedBy = "photo",
-            orphanRemoval = true,
-            cascade = {CascadeType.ALL},
-            fetch = FetchType.EAGER
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @JoinColumn(
+            name = "position_id",
+            referencedColumnName = "id"
     )
     private Position position;
 

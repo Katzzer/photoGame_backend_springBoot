@@ -11,9 +11,7 @@ import java.util.List;
 public interface PhotoRepository extends JpaRepository<Photo, Long> {
 	
 	List<Photo> findPhotosByUniqueUserId(String jwtId);
-//	List<Photo> findPhotoByPositionCity(String city);
 
 	@Query("SELECT photo FROM Photo photo WHERE photo.position.city = ?1 ")
-	List<Photo> findByCity(String City);
-
+	List<Photo> findByCity(String city);
 }

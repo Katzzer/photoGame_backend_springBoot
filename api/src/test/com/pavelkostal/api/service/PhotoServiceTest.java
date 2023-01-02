@@ -6,6 +6,7 @@ import com.pavelkostal.api.repository.PhotoRepository;
 import com.pavelkostal.api.repository.PositionRepository;
 import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,12 +43,9 @@ class PhotoServiceTest {
     
     @BeforeEach
     public void beforeEach() {
-        position1 = new Position(50.2092567, 15.8327564, "Hradec Kralove", "null", "null", "null", "null");
+        position1 = new Position(50.2092567, 15.8327564, "Hradec_Kralove", "null", "null", "null", "null");
         position2 = new Position(50.2092567, 15.8327564, "Prag",  "null", "null", "null", "null");
-        position3 = new Position(50.2092567, 15.8327564, "Hradec Kralove", "null", "null", "null", "null");
-//        positionRepository.save(position1);
-//        positionRepository.save(position2);
-//        positionRepository.save(position3);
+        position3 = new Position(50.2092567, 15.8327564, "Hradec_Kralove", "null", "null", "null", "null");
         testingPhoto1 = new Photo("data:image/jpeg;base64,someValue", "123", position1);
         testingPhoto2 = new Photo("data:image/jpeg;base64,someValue", "123", position2);
         testingPhoto3 = new Photo("data:image/jpeg;base64,someValue", "1234", position3);
@@ -55,14 +53,18 @@ class PhotoServiceTest {
         photoRepository.save(testingPhoto2);
         photoRepository.save(testingPhoto3);
     }
+    
+    @Test
+    @Disabled
+    void savePhoto() {
+        // TODO: implement later
+    }
 
-//    @Test
-//    void savePhoto() {
-//    }
-//
-//    @Test
-//    void getPhotoById() {
-//    }
+    @Test
+    @Disabled
+    void getPhotoById() {
+        // TODO: implement later
+    }
 
     @Test
     void getAllImagesForSelectedUser() {
@@ -78,10 +80,12 @@ class PhotoServiceTest {
     void getAllImagesByCity() {
         // given
         // when
-        List<Photo> listOfPhotosByCity = underTest.getAllPhotosByCity("Hradec_Kralove");
+        List<Photo> listOfPhotosByCity1 = underTest.getAllPhotosByCity("Hradec_Kralove");
+        List<Photo> listOfPhotosByCity2 = underTest.getAllPhotosByCity("Prag");
 
         // then
-        assertEquals(3, listOfPhotosByCity.size());
+        assertEquals(2, listOfPhotosByCity1.size());
+        assertEquals(1, listOfPhotosByCity2.size());
     }
 
     @Test
@@ -92,7 +96,7 @@ class PhotoServiceTest {
 
         // then
         assertEquals(2, allCityInDb.size());
-        assertEquals("Hradec Kralove", allCityInDb.get(0));
+        assertEquals("Hradec_Kralove", allCityInDb.get(0));
         assertEquals("Prag", allCityInDb.get(1));
     }
 }
