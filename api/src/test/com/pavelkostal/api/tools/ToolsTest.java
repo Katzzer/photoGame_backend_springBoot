@@ -75,8 +75,8 @@ class ToolsTest {
         // Given
         String city1 = "Hradec_Kralove";
         String city2 = "Nove_Mesto";
-        Position position1 = new Position(1, 2, "Hradec_Kralove", null, null, null, null);
-        Position position2 = new Position(1, 2, "Nove_Mesto", null, null, null, null);
+        Position position1 = new Position(1, 2, city1, null, null, null, null);
+        Position position2 = new Position(1, 2, city2, null, null, null, null);
         Photo photo1 = new Photo("aaa", "123", position1);
         Photo photo2 = new Photo("aaa", "123", position2);
         List<Photo> photos = List.of(photo1, photo2);
@@ -89,5 +89,20 @@ class ToolsTest {
         String city2WithSpace = "Nove Mesto";
         assertEquals(photosWithSpace.get(0).getPosition().getCity(), city1WithSpace);
         assertEquals(photosWithSpace.get(1).getPosition().getCity(), city2WithSpace);
+    }
+
+    @Test
+    void replaceDiacriticsInString() {
+        // Given
+        String city = "Hradec Králové";
+        String specialCharacters = "ěščřžýáíéúůĚŠČŘŽÝÁÍÉÚ";
+
+        // When
+        String cityWithReplacedText = Tools.replaceSpecialCharactersInString(city);
+        String replacedSpecialCharacters = Tools.replaceSpecialCharactersInString(specialCharacters);
+
+        // Then
+        assertEquals("Hradec Kralove", cityWithReplacedText);
+        assertEquals("escrzyaieuuESCRZYAIEU", replacedSpecialCharacters);
     }
 }
