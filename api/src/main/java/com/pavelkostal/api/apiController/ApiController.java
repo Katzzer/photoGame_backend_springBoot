@@ -9,7 +9,7 @@ import com.pavelkostal.api.model.ResponsePhotoSaved;
 import com.pavelkostal.api.service.PhotoService;
 import com.pavelkostal.api.tools.TokenTool;
 import com.pavelkostal.api.tools.Tools;
-import com.pavelkostal.api.tools.VerifyGPSPosition;
+import com.pavelkostal.api.tools.GPSPositionTools;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +29,7 @@ public class ApiController {
 
     private final PhotoService photoService;
     private final TokenTool tokenTool;
-    private final VerifyGPSPosition verifyGPSPosition;
+    private final GPSPositionTools gpsPositionTools;
     
     @GetMapping
     public String hello() {
@@ -59,11 +59,9 @@ public class ApiController {
             return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_IMAGE.toString()), HttpStatus.BAD_REQUEST);
         }
 
-        if (!verifyGPSPosition.isValidGPSPositionAtEnteredCity(photo)) {
+        if (!gpsPositionTools.isValidGPSPositionAtEnteredCity(photo)) {
             return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS_AT_CITY.toString()), HttpStatus.BAD_REQUEST);
         }
-        
-        photo.setPosition(verifyGPSPosition.getPositionFromGps(photo));
         
         long savePhotoId = photoService.savePhoto(photo);
         ResponsePhotoSaved response = new ResponsePhotoSaved(savePhotoId, ResponseMessages.PHOTO_SAVED.toString());

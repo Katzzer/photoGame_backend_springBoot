@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class VerifyGPSPosition {
+public class GPSPositionTools {
 
     private final PositionStack positionStack;
 
@@ -42,7 +42,7 @@ public class VerifyGPSPosition {
         return false;
     }
     
-    public Position getPositionFromGps(Photo photo) {
+    public Position getPositionInformationFromGps(Photo photo) {
         String query = photo.getPosition().getGpsPositionLatitude() + ", " + photo.getPosition().getGpsPositionLongitude();
 
         PositionStackResponseDataWrapper dataByGps = positionStack.getDataByGps(positionStackAccessKey, query);

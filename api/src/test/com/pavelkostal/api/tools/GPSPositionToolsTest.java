@@ -9,10 +9,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-class VerifyGPSPositionTest {
+class GPSPositionToolsTest {
 
     @Autowired
-    VerifyGPSPosition underTest;
+    GPSPositionTools underTest;
     
     double latitudeForPosition1 = 50.2092567;
     double longitudeForPosition1 = 15.8327564;
@@ -48,8 +48,8 @@ class VerifyGPSPositionTest {
         // Given
 
         // When
-        Position positionFromGps1 = underTest.getPositionFromGps(testingPhoto1);
-        Position positionFromGps2 = underTest.getPositionFromGps(testingPhoto2);
+        Position positionFromGps1 = underTest.getPositionInformationFromGps(testingPhoto1);
+        Position positionFromGps2 = underTest.getPositionInformationFromGps(testingPhoto2);
 
         // Then
         assertEquals(longitudeForPosition1, positionFromGps1.getGpsPositionLongitude());

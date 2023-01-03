@@ -3,7 +3,7 @@ package com.pavelkostal.api.service;
 import com.pavelkostal.api.entity.Photo;
 import com.pavelkostal.api.repository.PhotoRepository;
 import com.pavelkostal.api.repository.PositionRepository;
-import com.pavelkostal.api.tools.Tools;
+import com.pavelkostal.api.tools.GPSPositionTools;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +17,12 @@ public class PhotoService {
 
     private final PhotoRepository photoRepository;
     private final PositionRepository positionRepository;
+    private final GPSPositionTools gpsPositionTools;
 
     public long savePhoto(Photo photo) {
-        Photo photoWithCorrectCityName = Tools.replaceSpaceWithUnderscore(photo);
+        photo.setPosition(gpsPositionTools.getPositionInformationFromGps(photo));
 
-        Photo savedPhoto = photoRepository.save(photoWithCorrectCityName);
+        Photo savedPhoto = photoRepository.save(photo);
         return savedPhoto.getId();
     }
     
@@ -34,9 +35,7 @@ public class PhotoService {
     }
 
     public List<Photo> getAllPhotosByCity(String city) {
-        city = Tools.replaceSpaceWithUnderscore(city);
-        List<Photo> photosByCity = photoRepository.findByCity(city);
-        return Tools.replaceUnderscoreWithSpace(photosByCity);
+        return photoRepository.findByCity(city);
     }
 
     public List<String> getAllCityInDb() {

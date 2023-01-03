@@ -1,8 +1,5 @@
 package com.pavelkostal.api.tools;
 
-import com.pavelkostal.api.entity.Photo;
-import com.pavelkostal.api.entity.Position;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,32 +21,6 @@ public class Tools {
                     null;
         };
         return extension != null;
-    }
-
-    public static Photo replaceSpaceWithUnderscore(Photo photo) {
-        Position position = photo.getPosition();
-        String city = position.getCity();
-        position.setCity(city.replace(" ", "_"));
-        photo.setPosition(position);
-        return photo;
-    }
-
-    public static String replaceSpaceWithUnderscore(String text) {
-        return text.replace(" ", "_");
-    }
-
-    public static List<Photo> replaceUnderscoreWithSpace(List<Photo> listOfPhotos) {
-        List<Photo> newList = new ArrayList<>();
-        for (Photo photo : listOfPhotos) {
-            Position position = photo.getPosition();
-            String city = position.getCity();
-            city = city.replace("_", " ");
-            position.setCity(city);
-            photo.setPosition(position);
-            newList.add(photo);
-        }
-
-        return newList;
     }
 
     public static List<String> replaceUnderscoreWithSpaceForString(List<String> listOfCity) {
@@ -84,8 +55,6 @@ public class Tools {
         text = text.replace("Í", "I");
         text = text.replace("É", "E");
         text = text.replace("Ú", "U");
-        
-        
         
         return text;
     }
