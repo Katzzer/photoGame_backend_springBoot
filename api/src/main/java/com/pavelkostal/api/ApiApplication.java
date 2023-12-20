@@ -9,6 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ public class ApiApplication {
         SpringApplication.run(ApiApplication.class, args);
     }
 
+    @Profile("!test")
     @Bean
     CommandLineRunner commandLineRunner(PhotoRepository photoRepository) {
         return args -> {
