@@ -43,7 +43,7 @@ public class ApiApplication {
                 Photo photo = new Photo("aaa", uuid, position);
                 listOfPhotos.add(photo);
             }
-            
+
             photoRepository.saveAll(listOfPhotos);
         };
     }

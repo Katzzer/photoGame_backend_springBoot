@@ -12,14 +12,14 @@ import lombok.Setter;
 @Setter
 public class Photo implements ResponsePhoto {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
     @Column(name = "photo", nullable = false, columnDefinition = "text")
     private String photoAsString;
 
-    @Column(name = "uniquer_user_id", nullable = false, columnDefinition = "text")
+    @Column(name = "unique_user_id", nullable = false, columnDefinition = "text")
     private String uniqueUserId;
 
     @OneToOne(
