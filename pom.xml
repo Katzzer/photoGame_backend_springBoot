@@ -16,8 +16,8 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.boot.dependencies.version>3.0.0</spring.boot.dependencies.version>
-        <spring.boot.maven.plugin.version>3.0.0</spring.boot.maven.plugin.version>
+        <spring.boot.dependencies.version>3.2.1</spring.boot.dependencies.version>
+        <spring.boot.maven.plugin.version>3.2.1</spring.boot.maven.plugin.version>
         <image>pavelkostal/${project.artifactId}:${project.version}</image>
     </properties>
 
@@ -29,11 +29,6 @@
                 <version>${spring.boot.dependencies.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
-            </dependency>
-            <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-core</artifactId>
-                <version>10.4.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

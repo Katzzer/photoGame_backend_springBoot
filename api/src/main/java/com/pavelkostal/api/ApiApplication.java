@@ -23,7 +23,7 @@ public class ApiApplication {
         SpringApplication.run(ApiApplication.class, args);
     }
 
-    @Profile("!test")
+    @Profile("h2")
     @Bean
     CommandLineRunner commandLineRunner(PhotoRepository photoRepository) {
         return args -> {
