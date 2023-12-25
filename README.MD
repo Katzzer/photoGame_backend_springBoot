@@ -2,6 +2,7 @@
 
 ## TODO
 - Add tests to JWT
+- Repair plugin for Docker in Maven
 
 ## Module description
 - api - used for api communication
