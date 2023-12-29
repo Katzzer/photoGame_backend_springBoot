@@ -68,7 +68,8 @@ public class ApiController {
 
         InputStream initialStream = multipartFile.getInputStream();
         byte[] buffer = new byte[initialStream.available()];
-//        int read = initialStream.read(buffer);
+        @SuppressWarnings("unused")
+        int read = initialStream.read(buffer);// without this line of code photo are not saved correctly, DO NOT REMOVE
 
         String imageName = savedPhotoId + ".jpeg";
         File targetFile = new File("r:\\" + imageName);
@@ -76,6 +77,7 @@ public class ApiController {
         try (OutputStream outStream = new FileOutputStream(targetFile)) {
             outStream.write(buffer);
         }
+
         ResponsePhotoSaved response = new ResponsePhotoSaved(savedPhotoId, ResponseMessages.PHOTO_SAVED.toString());
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
@@ -91,8 +93,6 @@ public class ApiController {
 
         String imageName = imageId + ".jpeg";
         byte[] imageAsBytes = Files.readAllBytes(Paths.get("R:\\" + imageName));
-//        final HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.IMAGE_PNG);
 
         return ResponseEntity
                 .ok()
