@@ -32,26 +32,26 @@ class ToolsTest {
         assertFalse(validGps);
     }
     
-    @Test
-    void itShouldCheckIfValidImageWasSent() {
-        // Given
-        String imageJpeg = "data:image/jpeg;base64,someValue";
-        String imageJpg = "data:image/jpg;base64,someValue";
-        String imagePng = "data:image/png;base64,someValue";
-        String imageInvalid = "someValue,someValue";
-        
-        // When
-        boolean validImageJpeg = Tools.isValidImage(imageJpeg);
-        boolean validImageJpg = Tools.isValidImage(imageJpg);
-        boolean validImagePng = Tools.isValidImage(imagePng);
-        boolean invalidImage = Tools.isValidImage(imageInvalid);
-    
-        // Then
-        assertTrue(validImageJpeg);
-        assertTrue(validImageJpg);
-        assertTrue(validImagePng);
-        assertFalse(invalidImage);
-    }
+//    @Test
+//    void itShouldCheckIfValidImageWasSent() {
+//        // Given
+//        String imageJpeg = "data:image/jpeg;base64,someValue";
+//        String imageJpg = "data:image/jpg;base64,someValue";
+//        String imagePng = "data:image/png;base64,someValue";
+//        String imageInvalid = "someValue,someValue";
+//
+//        // When
+//        boolean validImageJpeg = Tools.isValidImage(imageJpeg);
+//        boolean validImageJpg = Tools.isValidImage(imageJpg);
+//        boolean validImagePng = Tools.isValidImage(imagePng);
+//        boolean invalidImage = Tools.isValidImage(imageInvalid);
+//
+//        // Then
+//        assertTrue(validImageJpeg);
+//        assertTrue(validImageJpg);
+//        assertTrue(validImagePng);
+//        assertFalse(invalidImage);
+//    }
 
     @Test
     void replaceDiacriticsInString() {

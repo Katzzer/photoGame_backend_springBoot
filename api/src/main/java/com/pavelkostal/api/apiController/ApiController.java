@@ -11,15 +11,19 @@ import com.pavelkostal.api.tools.TokenTool;
 import com.pavelkostal.api.tools.Tools;
 import com.pavelkostal.api.tools.GPSPositionTools;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @RestController()
 @RequestMapping("api/v1/data")
@@ -38,45 +42,63 @@ public class ApiController {
         return "Hello from Spring Boot Application Photo Game (" + now.format(dateTimeFormatter) +")";
     }
 
-    @PostMapping()
-    @ResponseBody
+    @PostMapping
     public ResponseEntity<ResponsePhoto> saveImage(
             @RequestHeader("Authorization") String bearerToken,
-            @RequestBody Photo photo) throws BadJOSEException, ParseException, JOSEException {
-    
+            @RequestPart("imageFile") MultipartFile multipartFile,
+            @RequestPart("photo") Photo photo
+    ) throws IOException, BadJOSEException, ParseException, JOSEException {
+
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
         photo.setUniqueUserId(uniqueUserId);
 
         if (photo.getPosition() == null) {
             return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS.toString()), HttpStatus.BAD_REQUEST);
         }
-    
+
         if (!Tools.isValidGps(photo.getPosition().getGpsPositionLatitude(), photo.getPosition().getGpsPositionLongitude())) {
             return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.NO_GPS.toString()), HttpStatus.BAD_REQUEST);
-        }
-        
-        if (!Tools.isValidImage(photo.getPhotoAsString())) {
-            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_IMAGE.toString()), HttpStatus.BAD_REQUEST);
         }
 
         if (!gpsPositionTools.isValidGPSPositionAtEnteredCity(photo)) {
             return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS_AT_CITY.toString()), HttpStatus.BAD_REQUEST);
         }
-        
-        long savePhotoId = photoService.savePhoto(photo);
-        ResponsePhotoSaved response = new ResponsePhotoSaved(savePhotoId, ResponseMessages.PHOTO_SAVED.toString());
+
+        long savedPhotoId = photoService.savePhoto(photo);
+
+        InputStream initialStream = multipartFile.getInputStream();
+        byte[] buffer = new byte[initialStream.available()];
+//        int read = initialStream.read(buffer);
+
+        String imageName = savedPhotoId + ".jpeg";
+        File targetFile = new File("r:\\" + imageName);
+
+        try (OutputStream outStream = new FileOutputStream(targetFile)) {
+            outStream.write(buffer);
+        }
+        ResponsePhotoSaved response = new ResponsePhotoSaved(savedPhotoId, ResponseMessages.PHOTO_SAVED.toString());
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
-    
+
     @GetMapping("/image/{imageId}")
-    public ResponseEntity<ResponsePhoto> getImageById(@PathVariable Long imageId) {
+    public ResponseEntity<byte[]> getImageById(@PathVariable("imageId") Long imageId) throws IOException {
         Optional<Photo> photoById = photoService.getPhotoById(imageId);
-        
+        // TODO: check if user has access to this photo
+
         if (photoById.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        
-        return new ResponseEntity<>(photoById.get(), HttpStatus.OK);
+
+        String imageName = imageId + ".jpeg";
+        byte[] imageAsBytes = Files.readAllBytes(Paths.get("R:\\" + imageName));
+//        final HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.IMAGE_PNG);
+
+        return ResponseEntity
+                .ok()
+                .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+//                .eTag(version)
+                .body(imageAsBytes);
     }
     
     @GetMapping("/images")
