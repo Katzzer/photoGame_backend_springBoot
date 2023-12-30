@@ -31,7 +31,7 @@ class AwsCognitoIdTokenProcessorTest {
         // when
 
         // then
-        assertEquals(authenticate, null);
+        assertNull(authenticate);
 
     }
 

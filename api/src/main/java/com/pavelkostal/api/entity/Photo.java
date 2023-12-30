@@ -16,9 +16,6 @@ public class Photo implements ResponsePhoto {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "photo", nullable = false, columnDefinition = "text")
-    private String photoAsString;
-
     @Column(name = "unique_user_id", nullable = false, columnDefinition = "text")
     private String uniqueUserId;
 
@@ -36,7 +33,6 @@ public class Photo implements ResponsePhoto {
     }
 
     public Photo(String photoAsString, String uniqueUserId, Position position) {
-        this.photoAsString = photoAsString;
         this.uniqueUserId = uniqueUserId;
         this.position = position;
     }

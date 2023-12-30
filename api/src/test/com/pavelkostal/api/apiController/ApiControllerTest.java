@@ -1,5 +1,6 @@
 package com.pavelkostal.api.apiController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pavelkostal.api.entity.Photo;
 import com.pavelkostal.api.entity.Position;
@@ -13,10 +14,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 
 import java.util.List;
@@ -24,13 +30,13 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false) // to remove custom filter in Spring Security
 @ContextConfiguration
+@ActiveProfiles("test")
 class ApiControllerTest {
 
     @Autowired
@@ -42,13 +48,22 @@ class ApiControllerTest {
     @MockBean
     TokenTool tokenTool;
 
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+
     Position position1;
     Photo testingPhoto1;
+    ObjectMapper objectMapper;
+    MockMultipartFile imageFile;
+    MockMultipartFile photoAsJson;
 
     @BeforeEach
-    public void beforeEach() {
+    public void beforeEach() throws JsonProcessingException {
         position1 = new Position(50.2092567, 15.8327564,"Hradec Kralove",null, null, null, null);
         testingPhoto1 = new Photo("data:image/jpeg;base64,someValue","123", position1);
+        imageFile = new MockMultipartFile("imageFile", "filename.txt", MediaType.IMAGE_JPEG_VALUE, "some xml".getBytes());
+        objectMapper = new ObjectMapper();
+        photoAsJson = new MockMultipartFile("photo", "photo", "application/json", objectMapper.writeValueAsString(testingPhoto1).getBytes());
     }
 
     private final String idToken = "eyJraWQiOiJcL20zMTh0ZWgzdktMNTlQc0pycHFJU3VhZHJaUXJZSUN2bURFNVF6YWpxRT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIyZDBhN2QwMS1jYjk1LTRhZTItODliZC05M2NiN2FjN2I4YmEiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tXC9ldS1jZW50cmFsLTFfSVczUnh4MXJDIiwiY29nbml0bzp1c2VybmFtZSI6ImthdHp6Iiwib3JpZ2luX2p0aSI6IjQ5M2QyNGIzLTZhMzMtNDkwMC04NmI5LTk0ZGVjMmFlYzRmMyIsImF1ZCI6IjQxMnRxa2NtYWplaXJtZ2N1aGhsYmJxZTNoIiwiZXZlbnRfaWQiOiIzYjA3MzRjNi02YzQzLTRmYzAtOGM4My03OTYzMGExMTY3N2MiLCJ0b2tlbl91c2UiOiJpZCIsImF1dGhfdGltZSI6MTY3MjAzODUzMywibmFtZSI6ImthdHp6IiwiZXhwIjoxNjcyMDgzMDk1LCJpYXQiOjE2NzIwNzk0OTUsImp0aSI6IjgxOTZlODZjLTExOTYtNDYwNS04ZmY4LTBiNjkxMmRiNjY5NiIsImVtYWlsIjoia2F0enpAc2V6bmFtLmN6In0.HvkVFd8WfDYP1Q2HWmEpIkkJaZe-ZXS7bLeT78MypYZJqUX-TUhB8VcMpbJiezkT-Op3LfR5RMVJlQOLGk0D4Ki6HmvVIAgIpgtkwfq5XmNr80l-rrp_rTbBj5HyvpejtoII4lV0WN8sYyG_yfPr2175tZ8jl-owTKkMiZG9d-AOy5N2hRfWjutpZ-DIZjkP7XBQN_D0jjWj3CjA9xmilNuHXwyW0hzf0Xuc19YwJR9cp3DoGHnXQCWM9PxcVMlLeFSg21y6fgGgxpTBSMElOB1snV90TWmmHlcBYSPD4cII7BptAtOOYDIZzQYyFdka1SiIykPFrR71Rvx8KX4YJA";
@@ -59,19 +74,17 @@ class ApiControllerTest {
     @WithMockUser
     void itShouldTesSaveImageApiEndpoint() throws Exception {
         // Given
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
         // When
+        // Then
         when(tokenTool.getUniqueUserId(any())).thenReturn("12345");
 
-        ResultActions resultActions = mockMvc.perform(post("/api/v1/data")
+        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/data")
+                        .file(imageFile)
+                        .file(photoAsJson)
                         .header("Authorization", "Bearer " + idToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testingPhoto1)));
-
-        // Then
-        resultActions.andExpect(status().is2xxSuccessful());
+                        .param("some-random", "4"))
+                .andExpect(status().is(202));
     }
 
     @Test
@@ -80,39 +93,36 @@ class ApiControllerTest {
     void itShouldTesSaveImageApiEndpointWithInvalidGps() throws Exception {
         // Given
         testingPhoto1.getPosition().setGpsPositionLatitude(500000);
-
-        ObjectMapper objectMapper = new ObjectMapper();
+        photoAsJson = new MockMultipartFile("photo", "photo", "application/json", objectMapper.writeValueAsString(testingPhoto1).getBytes());
 
         // When
+        // Then
         when(tokenTool.getUniqueUserId(any())).thenReturn("12345");
 
-        ResultActions resultActions = mockMvc.perform(post("/api/v1/data")
-                .header("Authorization", "Bearer " + idToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testingPhoto1)));
-
-        // Then
-        resultActions.andExpect(status().is4xxClientError());
+        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/data")
+                        .file(imageFile)
+                        .file(photoAsJson)
+                        .header("Authorization", "Bearer " + idToken)
+                        .param("some-random", "4"))
+                .andExpect(status().is4xxClientError());
     }
 
     @Test
-    @DisplayName("Test saveImage endpoint with invalid GPS")
+    @DisplayName("Test saveImage endpoint with missing photo")
     @WithMockUser
     void itShouldTesSaveImageApiEndpointWithInvalidPhoto() throws Exception {
         // Given
-        testingPhoto1.setPhotoAsString("someValue");
-        ObjectMapper objectMapper = new ObjectMapper();
-
         // When
+        // Then
         when(tokenTool.getUniqueUserId(any())).thenReturn("12345");
 
-        ResultActions resultActions = mockMvc.perform(post("/api/v1/data")
-                .header("Authorization", "Bearer " + idToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testingPhoto1)));
-
-        // Then
-        resultActions.andExpect(status().is4xxClientError());
+        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/data")
+                        .file(photoAsJson)
+                        .header("Authorization", "Bearer " + idToken)
+                        .param("some-random", "4"))
+                .andExpect(status().is4xxClientError());
     }
 
     @Test

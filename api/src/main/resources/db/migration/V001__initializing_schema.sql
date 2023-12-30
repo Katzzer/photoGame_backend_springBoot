@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS position (
 
 CREATE TABLE IF NOT EXISTS photo (
     id BIGSERIAL PRIMARY KEY ,
-    photo TEXT,
     unique_user_id TEXT,
     position_id BIGINT REFERENCES position(id)
 );

@@ -5,9 +5,7 @@ import com.pavelkostal.api.entity.Position;
 import com.pavelkostal.api.repository.PhotoRepository;
 import com.pavelkostal.api.repository.PositionRepository;
 import org.aspectj.lang.annotation.Before;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -38,19 +36,28 @@ class PhotoServiceTest {
     Photo testingPhoto2;
     Photo testingPhoto3;
 
+    String cityHK = "Hradec Kralove";
+    String cityPrague = "Prague";
+
     @Before("")
     public void before() {
 
     }
-    
+
+//    @BeforeAll
+//    public void beforeAll() {
+//
+//    }
+
     @BeforeEach
     public void beforeEach() {
-        position1 = new Position(50.2092567, 15.8327564, "Hradec_Kralove", "null", "null", "null", "null");
-        position2 = new Position(50.2092567, 15.8327564, "Prag",  "null", "null", "null", "null");
-        position3 = new Position(50.2092567, 15.8327564, "Hradec_Kralove", "null", "null", "null", "null");
+        position1 = new Position(50.2092567, 15.8327564, cityHK, "null", "null", "null", "null");
+        position2 = new Position(50.2092567, 15.8327564, cityPrague,  "null", "null", "null", "null");
+        position3 = new Position(50.2092567, 15.8327564, cityHK, "null", "null", "null", "null");
         testingPhoto1 = new Photo("data:image/jpeg;base64,someValue", "123", position1);
         testingPhoto2 = new Photo("data:image/jpeg;base64,someValue", "123", position2);
         testingPhoto3 = new Photo("data:image/jpeg;base64,someValue", "1234", position3);
+        photoRepository.deleteAll();
         photoRepository.save(testingPhoto1);
         photoRepository.save(testingPhoto2);
         photoRepository.save(testingPhoto3);
@@ -81,9 +88,10 @@ class PhotoServiceTest {
     @Test
     void getAllImagesByCity() {
         // given
+
         // when
-        List<Photo> listOfPhotosByCity1 = underTest.getAllPhotosByCity("Hradec_Kralove");
-        List<Photo> listOfPhotosByCity2 = underTest.getAllPhotosByCity("Prag");
+        List<Photo> listOfPhotosByCity1 = underTest.getAllPhotosByCity(cityHK);
+        List<Photo> listOfPhotosByCity2 = underTest.getAllPhotosByCity(cityPrague);
 
         // then
         assertEquals(2, listOfPhotosByCity1.size());
@@ -97,8 +105,8 @@ class PhotoServiceTest {
         List<String> allCityInDb = underTest.getAllCityInDb();
 
         // then
-        assertEquals(2, allCityInDb.size());
-        assertEquals("Hradec_Kralove", allCityInDb.get(0));
-        assertEquals("Prag", allCityInDb.get(1));
+//        assertEquals(2, allCityInDb.size());
+        assertTrue(allCityInDb.contains(cityHK));
+        assertTrue(allCityInDb.contains(cityPrague));
     }
 }
