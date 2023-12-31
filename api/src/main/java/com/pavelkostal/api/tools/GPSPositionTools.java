@@ -61,15 +61,15 @@ public class GPSPositionTools {
                 region = values.region();
             }
 
-            if (locality.isEmpty() && !values.locality().equals("null")) {
+            if (locality.isEmpty() && values.locality() != null && values.locality().equals("null")) {
                 locality = values.locality();
             }
 
-            if (country.isEmpty() && !values.country().equals("null")) {
+            if (country.isEmpty() && values.country() != null && !values.country().equals("null")) {
                 country = values.country();
             }
             
-            if (continent.isEmpty() && !values.continent().equals("null")) {
+            if (continent.isEmpty() && values.continent() != null && !values.continent().equals("null")) {
                 continent = values.continent();
             }
             

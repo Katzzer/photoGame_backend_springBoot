@@ -3,10 +3,10 @@ CREATE TABLE IF NOT EXISTS position (
     gps_position_latitude BIGINT NOT NULL,
     gps_position_longitude BIGINT NOT NULL,
     city TEXT,
-    region TEXT NOT NULL,
-    locality TEXT NOT NULL,
-    country TEXT NOT NULL,
-    continent TEXT NOT NULL
+    region TEXT,
+    locality TEXT,
+    country TEXT,
+    continent TEXT
 );
 
 CREATE TABLE IF NOT EXISTS photo (
