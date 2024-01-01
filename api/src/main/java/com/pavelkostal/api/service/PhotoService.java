@@ -31,7 +31,6 @@ public class PhotoService {
     public List<Photo> getAllImagesForSelectedUser(String uniqueUserId) {
         return photoRepository.findPhotosByUniqueUserId(uniqueUserId);
     }
-
     public List<Photo> getAllPhotosByCity(String city) {
         return photoRepository.findAllPhotosByCity(city);
     }

@@ -1,5 +1,11 @@
 package com.pavelkostal.api.tools;
 
+import org.imgscalr.Scalr;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,18 +17,6 @@ public class Tools {
         return true;
     }
     
-//    public static boolean isValidImage(String image) {
-//        String[] strings = image.split(",");
-//        String extension = switch (strings[0]) {//check image's extension
-//            case "data:image/jpeg;base64" -> "jpeg";
-//            case "data:image/jpg;base64" -> "jpg";
-//            case "data:image/png;base64" -> "png";
-//            default ->//should write cases for more images types
-//                    null;
-//        };
-//        return extension != null;
-//    }
-
     public static List<String> replaceUnderscoreWithSpaceForString(List<String> listOfCity) {
         List<String> newList = new ArrayList<>();
         for (String city : listOfCity) {
@@ -57,5 +51,94 @@ public class Tools {
         text = text.replace("Ú", "U");
         
         return text;
+    }
+
+    public static void savePhotoWithThumbnail(MultipartFile multipartFile, long savedPhotoId) {
+        byte[] bufferedImage = getBytesFromMultipartFile(multipartFile);
+        savePhoto(bufferedImage, savedPhotoId);
+        savePhotoThumbnail(bufferedImage, savedPhotoId);
+    }
+
+    private static byte[] getBytesFromMultipartFile(MultipartFile multipartFile) {
+        InputStream originalImage;
+        try {
+            originalImage = multipartFile.getInputStream();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        byte[] buffer ;
+        try {
+            buffer = new byte[originalImage.available()];
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            @SuppressWarnings("unused")
+            int read = originalImage.read(buffer);// without this line of code photo are not saved correctly, DO NOT REMOVE
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return buffer;
+    }
+
+    private static void savePhoto(byte[] bufferedImage, long savedPhotoId) {
+        String imageName = savedPhotoId + ".jpeg";
+        File targetFile = new File("r:\\" + imageName);
+
+        try (OutputStream outStream = new FileOutputStream(targetFile)) {
+            outStream.write(bufferedImage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void savePhotoThumbnail(byte[] bufferedImage, long savedPhotoId) {
+        byte[] thumbnail = Tools.createThumbnail(bufferedImage);
+        String thumbnailImageName = savedPhotoId + "_thumbnail.jpeg";
+        File thumbnailtargetFile = new File("r:\\" + thumbnailImageName);
+
+        try (OutputStream outStream = new FileOutputStream(thumbnailtargetFile)) {
+            outStream.write(thumbnail);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static byte[] createThumbnail(byte[] originalImage) {
+        InputStream helperInputStream = new ByteArrayInputStream(originalImage);
+        InputStream inputStream = new ByteArrayInputStream(originalImage);
+
+        int imageWidth;
+        int imageHeight;
+        try {
+            BufferedImage read = ImageIO.read(helperInputStream); // stream is closed after reading : https://docs.oracle.com/javase/7/docs/api/javax/imageio/ImageIO.html#read%28java.io.InputStream%29
+            imageWidth = read.getWidth();
+            imageHeight = read.getHeight();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        int fixedImageWidth = 100;
+
+        double ratio = imageWidth / (double) fixedImageWidth;
+        int newImageHeight = (int) (imageHeight / ratio);
+
+        BufferedImage bufferedImage;
+        try {
+            bufferedImage = ImageIO.read(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        BufferedImage resizedImage = Scalr.resize(bufferedImage, Scalr.Method.SPEED, fixedImageWidth, newImageHeight);
+
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(resizedImage, "jpeg", baos);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return baos.toByteArray();
     }
 }

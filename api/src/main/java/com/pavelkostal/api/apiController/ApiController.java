@@ -47,7 +47,7 @@ public class ApiController {
             @RequestHeader("Authorization") String bearerToken,
             @RequestPart("imageFile") MultipartFile multipartFile,
             @RequestPart("photo") Photo photo
-    ) throws IOException, BadJOSEException, ParseException, JOSEException {
+    ) throws BadJOSEException, ParseException, JOSEException {
 
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
         photo.setPhotoOwner(uniqueUserId);
@@ -62,17 +62,7 @@ public class ApiController {
 
         long savedPhotoId = photoService.savePhoto(photo);
 
-        InputStream initialStream = multipartFile.getInputStream();
-        byte[] buffer = new byte[initialStream.available()];
-        @SuppressWarnings("unused")
-        int read = initialStream.read(buffer);// without this line of code photo are not saved correctly, DO NOT REMOVE
-
-        String imageName = savedPhotoId + ".jpeg";
-        File targetFile = new File("r:\\" + imageName);
-
-        try (OutputStream outStream = new FileOutputStream(targetFile)) {
-            outStream.write(buffer);
-        }
+        Tools.savePhotoWithThumbnail(multipartFile, savedPhotoId);
 
         ResponsePhotoSaved response = new ResponsePhotoSaved(savedPhotoId, ResponseMessages.PHOTO_SAVED.toString());
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
@@ -106,8 +96,16 @@ public class ApiController {
     }
 
     @GetMapping("/images/{city}")
-    public ResponseEntity<List<Photo>> getAllImagesByCity(@PathVariable String city, @RequestHeader("Authorization") String bearerToken) throws BadJOSEException, ParseException, JOSEException {
+    public ResponseEntity<List<Photo>> getAllImagesByCity(@PathVariable String city) {
         List<Photo> allImagesForUser = photoService.getAllPhotosByCity(city);
+
+        return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);
+    }
+
+    @GetMapping("/images/all-images-for-current-user")
+    public ResponseEntity<List<Photo>> getAllImagesForSelectedUser(@RequestHeader("Authorization") String bearerToken) throws BadJOSEException, ParseException, JOSEException {
+        String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
+        List<Photo> allImagesForUser = photoService.getAllImagesForSelectedUser(uniqueUserId);
 
         return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);
     }

@@ -155,6 +155,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>moe.kanon.krautils</groupId>
+            <artifactId>krautils-scalr</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+
     </dependencies>
 
 </project>
