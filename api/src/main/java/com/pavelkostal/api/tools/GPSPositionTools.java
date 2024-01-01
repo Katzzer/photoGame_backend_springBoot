@@ -1,7 +1,7 @@
 package com.pavelkostal.api.tools;
 
+import com.pavelkostal.api.entity.User;
 import com.pavelkostal.api.entity.Photo;
-import com.pavelkostal.api.entity.Position;
 import com.pavelkostal.api.externalApiCalls.PositionStack;
 import com.pavelkostal.api.model.PositionStackResponseDataValues;
 import com.pavelkostal.api.model.PositionStackResponseDataWrapper;
@@ -22,11 +22,11 @@ public class GPSPositionTools {
     @Value("${position.stack.access.key}")
     String positionStackAccessKey;
 
-    public boolean isValidGPSPositionAtEnteredCity(Photo photo) {
+    public boolean isValidGPSPositionAtEnteredCity(User user) {
         PositionStackResponseDataWrapper data;
 
         try {
-            data = positionStack.getDataByCity(positionStackAccessKey, photo.getPosition().getCity());
+            data = positionStack.getDataByCity(positionStackAccessKey, user.getPhoto().getCity());
         } catch (Exception e) {
             logger.info("Exception in positionStack: " + e);
             return false;
@@ -35,8 +35,8 @@ public class GPSPositionTools {
         for (PositionStackResponseDataValues values : data.data()) {
             double latitudeOfEnteredCity = values.latitude();
             double longitudeOfEnteredCity = values.longitude();
-            double latitudeFromPhoto = photo.getPosition().getGpsPositionLatitude();
-            double longitudeFromPhoto = photo.getPosition().getGpsPositionLongitude();
+            double latitudeFromPhoto = user.getPhoto().getGpsPositionLatitude();
+            double longitudeFromPhoto = user.getPhoto().getGpsPositionLongitude();
 
             double distance = distance(latitudeOfEnteredCity, latitudeFromPhoto, longitudeOfEnteredCity, longitudeFromPhoto);
             if (distance < 50000) {
@@ -47,8 +47,8 @@ public class GPSPositionTools {
         return false;
     }
     
-    public Position getPositionInformationFromGps(Photo photo) {
-        String query = photo.getPosition().getGpsPositionLatitude() + ", " + photo.getPosition().getGpsPositionLongitude();
+    public Photo getPositionInformationFromGps(User user) {
+        String query = user.getPhoto().getGpsPositionLatitude() + ", " + user.getPhoto().getGpsPositionLongitude();
 
         PositionStackResponseDataWrapper dataByGps = positionStack.getDataByGps(positionStackAccessKey, query);
         String region = "";
@@ -61,7 +61,7 @@ public class GPSPositionTools {
                 region = values.region();
             }
 
-            if (locality.isEmpty() && values.locality() != null && values.locality().equals("null")) {
+            if (locality.isEmpty() && values.locality() != null && !values.locality().equals("null")) {
                 locality = values.locality();
             }
 
@@ -75,7 +75,7 @@ public class GPSPositionTools {
             
         }
         
-        return new Position(photo.getPosition().getGpsPositionLatitude(), photo.getPosition().getGpsPositionLongitude(), photo.getPosition().getCity(), region, locality, country, continent);
+        return new Photo(user.getPhoto().getGpsPositionLatitude(), user.getPhoto().getGpsPositionLongitude(), user.getPhoto().getCity(), region, locality, country, continent);
     }
 
     /**

@@ -1,7 +1,5 @@
 package com.pavelkostal.api.entity;
 
-
-import com.pavelkostal.api.model.ResponsePhoto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,31 +8,43 @@ import lombok.Setter;
 @Table(name = "photo")
 @Getter
 @Setter
-public class Photo implements ResponsePhoto {
+public class Photo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "unique_user_id", nullable = false, columnDefinition = "text")
-    private String uniqueUserId;
+    @Column(name = "gps_position_latitude")
+    private double gpsPositionLatitude;
 
-    @OneToOne(
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    @JoinColumn(
-            name = "position_id",
-            referencedColumnName = "id"
-    )
-    private Position position;
+    @Column(name = "gps_position_longitude")
+    private double gpsPositionLongitude;
+
+    @Column(name = "city", columnDefinition = "text")
+    private String city;
+
+    @Column(name = "region", columnDefinition = "text")
+    private String region;
+
+    @Column(name = "locality", columnDefinition = "text")
+    private String locality;
+
+    @Column(name = "country", columnDefinition = "text")
+    private String country;
+
+    @Column(name = "continent", nullable = false, columnDefinition = "text")
+    private String continent;
 
     public Photo() {
     }
 
-    public Photo(String photoAsString, String uniqueUserId, Position position) {
-        this.uniqueUserId = uniqueUserId;
-        this.position = position;
+    public Photo(double gpsPositionLatitude, double gpsPositionLongitude, String city, String region, String locality, String country, String continent) {
+        this.gpsPositionLatitude = gpsPositionLatitude;
+        this.gpsPositionLongitude = gpsPositionLongitude;
+        this.city = city;
+        this.region = region;
+        this.locality = locality;
+        this.country = country;
+        this.continent = continent;
     }
-
 }

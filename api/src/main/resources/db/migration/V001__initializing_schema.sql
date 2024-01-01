@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS position (
+CREATE TABLE IF NOT EXISTS photo (
     id BIGSERIAL PRIMARY KEY ,
     gps_position_latitude BIGINT NOT NULL,
     gps_position_longitude BIGINT NOT NULL,
@@ -9,8 +9,10 @@ CREATE TABLE IF NOT EXISTS position (
     continent TEXT
 );
 
-CREATE TABLE IF NOT EXISTS photo (
+CREATE TABLE IF NOT EXISTS user_information (
     id BIGSERIAL PRIMARY KEY ,
     unique_user_id TEXT,
-    position_id BIGINT REFERENCES position(id)
+    photo_id BIGINT REFERENCES photo(id)
 );
+
+INSERT INTO user_information (unique_user_id, photo_id) VALUES ('123', 1)

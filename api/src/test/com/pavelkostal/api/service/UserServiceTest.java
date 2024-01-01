@@ -1,9 +1,9 @@
 package com.pavelkostal.api.service;
 
 import com.pavelkostal.api.entity.Photo;
-import com.pavelkostal.api.entity.Position;
+import com.pavelkostal.api.entity.User;
+import com.pavelkostal.api.repository.UserRepository;
 import com.pavelkostal.api.repository.PhotoRepository;
-import com.pavelkostal.api.repository.PositionRepository;
 import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,23 +18,23 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-class PhotoServiceTest {
+class UserServiceTest {
+
+    @Autowired
+    UserRepository userRepository;
 
     @Autowired
     PhotoRepository photoRepository;
 
     @Autowired
-    PositionRepository positionRepository;
-
-    @Autowired
     PhotoService underTest;
 
-    Position position1;
-    Position position2;
-    Position position3;
-    Photo testingPhoto1;
-    Photo testingPhoto2;
-    Photo testingPhoto3;
+    Photo photo1;
+    Photo photo2;
+    Photo photo3;
+    User testingUser1;
+    User testingUser2;
+    User testingUser3;
 
     String cityHK = "Hradec Kralove";
     String cityPrague = "Prague";
@@ -51,16 +51,16 @@ class PhotoServiceTest {
 
     @BeforeEach
     public void beforeEach() {
-        position1 = new Position(50.2092567, 15.8327564, cityHK, "null", "null", "null", "null");
-        position2 = new Position(50.2092567, 15.8327564, cityPrague,  "null", "null", "null", "null");
-        position3 = new Position(50.2092567, 15.8327564, cityHK, "null", "null", "null", "null");
-        testingPhoto1 = new Photo("data:image/jpeg;base64,someValue", "123", position1);
-        testingPhoto2 = new Photo("data:image/jpeg;base64,someValue", "123", position2);
-        testingPhoto3 = new Photo("data:image/jpeg;base64,someValue", "1234", position3);
-        photoRepository.deleteAll();
-        photoRepository.save(testingPhoto1);
-        photoRepository.save(testingPhoto2);
-        photoRepository.save(testingPhoto3);
+        photo1 = new Photo(50.2092567, 15.8327564, cityHK, "null", "null", "null", "null");
+        photo2 = new Photo(50.2092567, 15.8327564, cityPrague,  "null", "null", "null", "null");
+        photo3 = new Photo(50.2092567, 15.8327564, cityHK, "null", "null", "null", "null");
+        testingUser1 = new User("123", photo1);
+        testingUser2 = new User("123", photo2);
+        testingUser3 = new User("1234", photo3);
+        userRepository.deleteAll();
+        userRepository.save(testingUser1);
+        userRepository.save(testingUser2);
+        userRepository.save(testingUser3);
     }
     
     @Test
@@ -79,7 +79,7 @@ class PhotoServiceTest {
     void getAllImagesForSelectedUser() {
         // given
         // when
-        List<Photo> listOfPhotosByUser = underTest.getAllImagesForSelectedUser("123");
+        List<User> listOfPhotosByUser = underTest.getAllImagesForSelectedUser("123");
 
         // then
         assertEquals(2, listOfPhotosByUser.size());

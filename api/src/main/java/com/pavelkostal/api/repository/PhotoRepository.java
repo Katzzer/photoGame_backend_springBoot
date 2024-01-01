@@ -9,9 +9,12 @@ import java.util.List;
 
 @Repository
 public interface PhotoRepository extends JpaRepository<Photo, Long> {
-	
-	List<Photo> findPhotosByUniqueUserId(String jwtId);
 
-	@Query("SELECT photo FROM Photo photo WHERE photo.position.city = ?1 ")
-	List<Photo> findByCity(String city);
+    @Query("SELECT city FROM Photo ")
+    List<String> findAllCity();
+
+    @Query("SELECT photo FROM Photo photo WHERE photo.city = ?1")
+    List<Photo> findAllPhotosByCity(String city);
+
+//    List<Photo> findAllByCity(String city);
 }

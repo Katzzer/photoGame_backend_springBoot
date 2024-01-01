@@ -2,8 +2,8 @@ package com.pavelkostal.api;
 
 import com.github.javafaker.Faker;
 import com.pavelkostal.api.entity.Photo;
-import com.pavelkostal.api.entity.Position;
-import com.pavelkostal.api.repository.PhotoRepository;
+import com.pavelkostal.api.entity.User;
+import com.pavelkostal.api.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,11 +25,11 @@ public class ApiApplication {
 
     @Profile({"h2"})
     @Bean
-    CommandLineRunner commandLineRunner(PhotoRepository photoRepository) {
+    CommandLineRunner commandLineRunner(UserRepository userRepository) {
         return args -> {
             Faker faker = new Faker();
 
-            List<Photo> listOfPhotos = new ArrayList<>();
+            List<User> listOfUsers = new ArrayList<>();
 
             for (int i = 0; i < 1_000; i++) {
                 String city = faker.address().city();
@@ -39,12 +39,12 @@ public class ApiApplication {
 
                 String uuid = UUID.randomUUID().toString();
 
-                Position position = new Position(longitude, latitude, city, "", "", country, "");
-                Photo photo = new Photo("aaa", uuid, position);
-                listOfPhotos.add(photo);
+                Photo photo = new Photo(longitude, latitude, city, "", "", country, "");
+                User user = new User(uuid, photo);
+                listOfUsers.add(user);
             }
 
-            photoRepository.saveAll(listOfPhotos);
+            userRepository.saveAll(listOfUsers);
         };
     }
 }
