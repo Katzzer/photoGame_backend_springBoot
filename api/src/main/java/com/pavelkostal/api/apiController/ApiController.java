@@ -86,6 +86,25 @@ public class ApiController {
 //                .eTag(version)
                 .body(imageAsBytes);
     }
+
+    @GetMapping("/image/thumbnail/{imageId}")
+    public ResponseEntity<byte[]> getImageThumbnailById(@PathVariable("imageId") Long imageId) throws IOException {
+        Optional<Photo> photoById = photoService.getPhotoById(imageId);
+        // TODO: check if user has access to this photo
+
+        if (photoById.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        String imageName = imageId + "_thumbnail.jpeg";
+        byte[] imageAsBytes = Files.readAllBytes(Paths.get("R:\\" + imageName));
+
+        return ResponseEntity
+                .ok()
+                .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+//                .eTag(version)
+                .body(imageAsBytes);
+    }
     
     @GetMapping("/images")
     public ResponseEntity<List<Photo>> getAllImagesForCurrentUser(@RequestHeader("Authorization") String bearerToken) throws BadJOSEException, ParseException, JOSEException {
