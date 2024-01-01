@@ -14,6 +14,9 @@ public class Photo {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @Column(name = "photo_owner")
+    private String photoOwner;
+
     @Column(name = "gps_position_latitude")
     private double gpsPositionLatitude;
 
@@ -38,7 +41,8 @@ public class Photo {
     public Photo() {
     }
 
-    public Photo(double gpsPositionLatitude, double gpsPositionLongitude, String city, String region, String locality, String country, String continent) {
+    public Photo(String photoOwner, double gpsPositionLatitude, double gpsPositionLongitude, String city, String region, String locality, String country, String continent) {
+        this.photoOwner = photoOwner;
         this.gpsPositionLatitude = gpsPositionLatitude;
         this.gpsPositionLongitude = gpsPositionLongitude;
         this.city = city;

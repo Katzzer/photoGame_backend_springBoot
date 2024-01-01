@@ -4,7 +4,6 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.pavelkostal.api.constants.ResponseMessages;
 import com.pavelkostal.api.entity.Photo;
-import com.pavelkostal.api.entity.User;
 import com.pavelkostal.api.model.ResponsePhoto;
 import com.pavelkostal.api.model.ResponsePhotoSaved;
 import com.pavelkostal.api.service.PhotoService;
@@ -47,25 +46,21 @@ public class ApiController {
     public ResponseEntity<ResponsePhoto> saveImage(
             @RequestHeader("Authorization") String bearerToken,
             @RequestPart("imageFile") MultipartFile multipartFile,
-            @RequestPart("photo") User user
+            @RequestPart("photo") Photo photo
     ) throws IOException, BadJOSEException, ParseException, JOSEException {
 
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
-        user.setUniqueUserId(uniqueUserId);
+        photo.setPhotoOwner(uniqueUserId);
 
-        if (user.getPhoto() == null) {
-            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS.toString()), HttpStatus.BAD_REQUEST);
-        }
-
-        if (!Tools.isValidGps(user.getPhoto().getGpsPositionLatitude(), user.getPhoto().getGpsPositionLongitude())) {
+        if (!Tools.isValidGps(photo.getGpsPositionLatitude(), photo.getGpsPositionLongitude())) {
             return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.NO_GPS.toString()), HttpStatus.BAD_REQUEST);
         }
 
-        if (!gpsPositionTools.isValidGPSPositionAtEnteredCity(user)) {
+        if (!gpsPositionTools.isValidGPSPositionAtEnteredCity(photo)) {
             return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS_AT_CITY.toString()), HttpStatus.BAD_REQUEST);
         }
 
-        long savedPhotoId = photoService.savePhoto(user);
+        long savedPhotoId = photoService.savePhoto(photo);
 
         InputStream initialStream = multipartFile.getInputStream();
         byte[] buffer = new byte[initialStream.available()];
@@ -85,7 +80,7 @@ public class ApiController {
 
     @GetMapping("/image/{imageId}")
     public ResponseEntity<byte[]> getImageById(@PathVariable("imageId") Long imageId) throws IOException {
-        Optional<User> photoById = photoService.getPhotoById(imageId);
+        Optional<Photo> photoById = photoService.getPhotoById(imageId);
         // TODO: check if user has access to this photo
 
         if (photoById.isEmpty()) {
@@ -103,16 +98,15 @@ public class ApiController {
     }
     
     @GetMapping("/images")
-    public ResponseEntity<List<User>> getAllImagesForCurrentUser(@RequestHeader("Authorization") String bearerToken) throws BadJOSEException, ParseException, JOSEException {
+    public ResponseEntity<List<Photo>> getAllImagesForCurrentUser(@RequestHeader("Authorization") String bearerToken) throws BadJOSEException, ParseException, JOSEException {
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
-        List<User> allImagesForUser = photoService.getAllImagesForSelectedUser(uniqueUserId);
+        List<Photo> allImagesForUser = photoService.getAllImagesForSelectedUser(uniqueUserId);
     
         return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);
     }
 
     @GetMapping("/images/{city}")
     public ResponseEntity<List<Photo>> getAllImagesByCity(@PathVariable String city, @RequestHeader("Authorization") String bearerToken) throws BadJOSEException, ParseException, JOSEException {
-        String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
         List<Photo> allImagesForUser = photoService.getAllPhotosByCity(city);
 
         return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);

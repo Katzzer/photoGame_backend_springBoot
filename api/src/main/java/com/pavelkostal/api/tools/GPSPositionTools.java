@@ -1,6 +1,5 @@
 package com.pavelkostal.api.tools;
 
-import com.pavelkostal.api.entity.User;
 import com.pavelkostal.api.entity.Photo;
 import com.pavelkostal.api.externalApiCalls.PositionStack;
 import com.pavelkostal.api.model.PositionStackResponseDataValues;
@@ -22,11 +21,11 @@ public class GPSPositionTools {
     @Value("${position.stack.access.key}")
     String positionStackAccessKey;
 
-    public boolean isValidGPSPositionAtEnteredCity(User user) {
+    public boolean isValidGPSPositionAtEnteredCity(Photo photo) {
         PositionStackResponseDataWrapper data;
 
         try {
-            data = positionStack.getDataByCity(positionStackAccessKey, user.getPhoto().getCity());
+            data = positionStack.getDataByCity(positionStackAccessKey, photo.getCity());
         } catch (Exception e) {
             logger.info("Exception in positionStack: " + e);
             return false;
@@ -35,8 +34,8 @@ public class GPSPositionTools {
         for (PositionStackResponseDataValues values : data.data()) {
             double latitudeOfEnteredCity = values.latitude();
             double longitudeOfEnteredCity = values.longitude();
-            double latitudeFromPhoto = user.getPhoto().getGpsPositionLatitude();
-            double longitudeFromPhoto = user.getPhoto().getGpsPositionLongitude();
+            double latitudeFromPhoto = photo.getGpsPositionLatitude();
+            double longitudeFromPhoto = photo.getGpsPositionLongitude();
 
             double distance = distance(latitudeOfEnteredCity, latitudeFromPhoto, longitudeOfEnteredCity, longitudeFromPhoto);
             if (distance < 50000) {
@@ -47,35 +46,29 @@ public class GPSPositionTools {
         return false;
     }
     
-    public Photo getPositionInformationFromGps(User user) {
-        String query = user.getPhoto().getGpsPositionLatitude() + ", " + user.getPhoto().getGpsPositionLongitude();
+    public void setPositionInformationFromGpsToCurrentPhoto(Photo photo) {
+        String query = photo.getGpsPositionLatitude() + ", " + photo.getGpsPositionLongitude();
 
         PositionStackResponseDataWrapper dataByGps = positionStack.getDataByGps(positionStackAccessKey, query);
-        String region = "";
-        String locality = "";
-        String country = "";
-        String continent = "";
 
         for (PositionStackResponseDataValues values : dataByGps.data()) {
-            if (region.isEmpty() && !values.region().equals("null")) {
-                region = values.region();
+            if (photo.getRegion() == null && !values.region().equals("null")) {
+                photo.setRegion(values.region());
             }
 
-            if (locality.isEmpty() && values.locality() != null && !values.locality().equals("null")) {
-                locality = values.locality();
+            if (photo.getLocality() == null && values.locality() != null && !values.locality().equals("null")) {
+                photo.setLocality(values.locality());
             }
 
-            if (country.isEmpty() && values.country() != null && !values.country().equals("null")) {
-                country = values.country();
+            if (photo.getCountry() == null && values.country() != null && !values.country().equals("null")) {
+                photo.setCountry(values.country());
             }
             
-            if (continent.isEmpty() && values.continent() != null && !values.continent().equals("null")) {
-                continent = values.continent();
+            if (photo.getContinent() == null && values.continent() != null && !values.continent().equals("null")) {
+                photo.setContinent(values.continent());
             }
             
         }
-        
-        return new Photo(user.getPhoto().getGpsPositionLatitude(), user.getPhoto().getGpsPositionLongitude(), user.getPhoto().getCity(), region, locality, country, continent);
     }
 
     /**

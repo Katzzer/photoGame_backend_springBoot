@@ -1,8 +1,6 @@
 package com.pavelkostal.api.service;
 
 import com.pavelkostal.api.entity.Photo;
-import com.pavelkostal.api.entity.User;
-import com.pavelkostal.api.repository.UserRepository;
 import com.pavelkostal.api.repository.PhotoRepository;
 import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.*;
@@ -21,9 +19,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserServiceTest {
 
     @Autowired
-    UserRepository userRepository;
-
-    @Autowired
     PhotoRepository photoRepository;
 
     @Autowired
@@ -32,9 +27,6 @@ class UserServiceTest {
     Photo photo1;
     Photo photo2;
     Photo photo3;
-    User testingUser1;
-    User testingUser2;
-    User testingUser3;
 
     String cityHK = "Hradec Kralove";
     String cityPrague = "Prague";
@@ -44,23 +36,15 @@ class UserServiceTest {
 
     }
 
-//    @BeforeAll
-//    public void beforeAll() {
-//
-//    }
-
     @BeforeEach
     public void beforeEach() {
-        photo1 = new Photo(50.2092567, 15.8327564, cityHK, "null", "null", "null", "null");
-        photo2 = new Photo(50.2092567, 15.8327564, cityPrague,  "null", "null", "null", "null");
-        photo3 = new Photo(50.2092567, 15.8327564, cityHK, "null", "null", "null", "null");
-        testingUser1 = new User("123", photo1);
-        testingUser2 = new User("123", photo2);
-        testingUser3 = new User("1234", photo3);
-        userRepository.deleteAll();
-        userRepository.save(testingUser1);
-        userRepository.save(testingUser2);
-        userRepository.save(testingUser3);
+        photo1 = new Photo("1",50.2092567, 15.8327564, cityHK, "null", "null", "null", "null");
+        photo2 = new Photo("1", 50.2092567, 15.8327564, cityPrague,  "null", "null", "null", "null");
+        photo3 = new Photo("2", 50.2092567, 15.8327564, cityHK, "null", "null", "null", "null");
+        photoRepository.deleteAll();
+        photoRepository.save(photo1);
+        photoRepository.save(photo2);
+        photoRepository.save(photo3);
     }
     
     @Test
@@ -79,7 +63,7 @@ class UserServiceTest {
     void getAllImagesForSelectedUser() {
         // given
         // when
-        List<User> listOfPhotosByUser = underTest.getAllImagesForSelectedUser("123");
+        List<Photo> listOfPhotosByUser = underTest.getAllImagesForSelectedUser("1");
 
         // then
         assertEquals(2, listOfPhotosByUser.size());

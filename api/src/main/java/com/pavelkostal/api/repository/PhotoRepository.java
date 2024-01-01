@@ -16,5 +16,6 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
     @Query("SELECT photo FROM Photo photo WHERE photo.city = ?1")
     List<Photo> findAllPhotosByCity(String city);
 
-//    List<Photo> findAllByCity(String city);
+    @Query("SELECT photo FROM Photo photo WHERE photo.photoOwner = ?1")
+    List<Photo> findPhotosByUniqueUserId(String uniqueUserId);
 }
