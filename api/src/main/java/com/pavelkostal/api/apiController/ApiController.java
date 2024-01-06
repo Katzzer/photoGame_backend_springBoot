@@ -11,12 +11,14 @@ import com.pavelkostal.api.tools.TokenTool;
 import com.pavelkostal.api.tools.Tools;
 import com.pavelkostal.api.tools.GPSPositionTools;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.time.LocalDateTime;
@@ -29,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("api/v1/data")
 @AllArgsConstructor
 @CrossOrigin()
+@Slf4j
 public class ApiController {
 
     private final PhotoService photoService;
@@ -97,13 +100,19 @@ public class ApiController {
         }
 
         String imageName = imageId + "_thumbnail.jpeg";
-        byte[] imageAsBytes = Files.readAllBytes(Paths.get("R:\\" + imageName));
+        try {
+            byte[] imageAsBytes = Files.readAllBytes(Paths.get("R:\\" + imageName));
 
-        return ResponseEntity
-                .ok()
-                .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+            return ResponseEntity
+                    .ok()
+                    .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
 //                .eTag(version)
-                .body(imageAsBytes);
+                    .body(imageAsBytes);
+        } catch (NoSuchFileException exception) {
+            log.error("Thumbnail not found: ", exception);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
     }
     
     @GetMapping("/images")
