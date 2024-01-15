@@ -89,7 +89,7 @@ class ApiControllerTest {
     @WithMockUser
     void itShouldTesSaveImageApiEndpointWithInvalidGps() throws Exception {
         // Given
-        photo1.setGpsPositionLatitude(500000);
+        photo1.setGpsPositionLatitude(500000d);
         photoAsJson = new MockMultipartFile("photo", "photo", "application/json", objectMapper.writeValueAsString(photo1).getBytes());
 
         // When

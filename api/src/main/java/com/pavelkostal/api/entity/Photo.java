@@ -18,10 +18,10 @@ public class Photo {
     private String photoOwner;
 
     @Column(name = "gps_position_latitude")
-    private double gpsPositionLatitude;
+    private Double gpsPositionLatitude;
 
     @Column(name = "gps_position_longitude")
-    private double gpsPositionLongitude;
+    private Double gpsPositionLongitude;
 
     @Column(name = "city", columnDefinition = "text")
     private String city;

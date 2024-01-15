@@ -18,7 +18,7 @@ public class PhotoService {
     private final GPSPositionTools gpsPositionTools;
 
     public long savePhoto(Photo photo) {
-        gpsPositionTools.setPositionInformationFromGpsToCurrentPhoto(photo);
+        gpsPositionTools.setPositionInformationFromGpsOrCityToCurrentPhoto(photo);
 
         Photo savedUser = photoRepository.save(photo);
         return savedUser.getId();

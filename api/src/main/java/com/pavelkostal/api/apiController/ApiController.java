@@ -55,12 +55,14 @@ public class ApiController {
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
         photo.setPhotoOwner(uniqueUserId);
 
-        if (!Tools.isValidGps(photo.getGpsPositionLatitude(), photo.getGpsPositionLongitude())) {
-            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.NO_GPS.toString()), HttpStatus.BAD_REQUEST);
+        if (!GPSPositionTools.isValidGps(photo.getGpsPositionLatitude(), photo.getGpsPositionLongitude())) {
+            log.warn(ResponseMessages.INVALID_GPS.toString());
+            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS.toString()), HttpStatus.BAD_REQUEST);
         }
 
-        if (!gpsPositionTools.isValidGPSPositionAtEnteredCity(photo)) {
-            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS_AT_CITY.toString()), HttpStatus.BAD_REQUEST);
+        if (photo.getGpsPositionLatitude() == null && photo.getGpsPositionLongitude() == null && photo.getCity() == null) {
+            log.warn(ResponseMessages.NO_GPS_NOR_CITY.toString());
+            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.NO_GPS_NOR_CITY.toString()), HttpStatus.BAD_REQUEST);
         }
 
         long savedPhotoId = photoService.savePhoto(photo);

@@ -11,12 +11,6 @@ import java.util.List;
 
 public class Tools {
 
-    public static boolean isValidGps(double latitude, double longitude) {
-        if (latitude < -90 || latitude > 90) return false;
-        if (longitude < -180 || longitude > 180) return false;
-        return true;
-    }
-    
     public static List<String> replaceUnderscoreWithSpaceForString(List<String> listOfCity) {
         List<String> newList = new ArrayList<>();
         for (String city : listOfCity) {
@@ -133,12 +127,12 @@ public class Tools {
         BufferedImage resizedImage = Scalr.resize(bufferedImage, Scalr.Method.SPEED, fixedImageWidth, newImageHeight);
 
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
-            ImageIO.write(resizedImage, "jpeg", baos);
+            ImageIO.write(resizedImage, "jpeg", byteArrayOutputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return baos.toByteArray();
+        return byteArrayOutputStream.toByteArray();
     }
 }

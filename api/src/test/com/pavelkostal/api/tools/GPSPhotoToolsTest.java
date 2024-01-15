@@ -24,25 +24,51 @@ class GPSPhotoToolsTest {
     Photo photo2 = new Photo("2", latitudeForPosition2, longitudeForPosition2, "Prague",null, null, null, null);
 
     @Test
-    void isValidGPSPositionAtEnteredCity() {
-        // given
+    void itShouldTestCorrectGps() {
+        // Given
+        double latitude =  50.2092567;
+        double longitude = 15.8327564;
 
-        // when
-        boolean validGPSPositionAtEnteredCity1 = underTest.isValidGPSPositionAtEnteredCity(photo1);
-        boolean validGPSPositionAtEnteredCity2 = underTest.isValidGPSPositionAtEnteredCity(photo2);
+        // When
+        boolean validGps = GPSPositionTools.isValidGps(latitude, longitude);
 
-        // then
-        assertTrue(validGPSPositionAtEnteredCity1);
-        assertTrue(validGPSPositionAtEnteredCity2);
+        // Then
+        assertTrue(validGps);
     }
+
+    @Test
+    void itShouldTestIncorrectGps() {
+        // Given
+        double latitude =  50.2092567;
+        double longitude = 190;
+
+        // When
+        boolean validGps = GPSPositionTools.isValidGps(latitude, longitude);
+
+        // Then
+        assertFalse(validGps);
+    }
+
+//    @Test
+//    void isValidGPSPositionAtEnteredCity() {
+//        // given
+//
+//        // when
+//        boolean validGPSPositionAtEnteredCity1 = underTest.isValidGPSPositionAtEnteredCity(photo1);
+//        boolean validGPSPositionAtEnteredCity2 = underTest.isValidGPSPositionAtEnteredCity(photo2);
+//
+//        // then
+//        assertTrue(validGPSPositionAtEnteredCity1);
+//        assertTrue(validGPSPositionAtEnteredCity2);
+//    }
 
     @Test
     void getPositionFromGps() {
         // Given
 
         // When
-        underTest.setPositionInformationFromGpsToCurrentPhoto(photo1);
-        underTest.setPositionInformationFromGpsToCurrentPhoto(photo2);
+        underTest.setPositionInformationFromGpsOrCityToCurrentPhoto(photo1);
+        underTest.setPositionInformationFromGpsOrCityToCurrentPhoto(photo2);
 
         // Then
         assertEquals(longitudeForPosition1, photo1.getGpsPositionLongitude());
