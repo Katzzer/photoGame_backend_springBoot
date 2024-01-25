@@ -126,7 +126,7 @@ public class ApiController {
     }
 
     @GetMapping("/images/{city}")
-    public ResponseEntity<List<Photo>> getAllImagesByCity(@PathVariable String city) {
+    public ResponseEntity<List<Photo>> getAllImagesByCity(@PathVariable("city") String city) {
         List<Photo> allImagesForUser = photoService.getAllPhotosByCity(city);
 
         return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);
@@ -140,7 +140,7 @@ public class ApiController {
         return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);
     }
 
-    @GetMapping("/list-of-cities/")
+    @GetMapping("/list-of-cities")
     public ResponseEntity<List<String>> getAllCityInDb() {
         List<String> allCityInDb = photoService.getAllCityInDb();
         return new ResponseEntity<>(Tools.replaceUnderscoreWithSpaceForString(allCityInDb), HttpStatus.OK);
