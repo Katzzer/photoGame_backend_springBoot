@@ -36,8 +36,7 @@ public class ApiController {
 
     private final PhotoService photoService;
     private final TokenTool tokenTool;
-    private final GPSPositionTools gpsPositionTools;
-    
+
     @GetMapping
     public String hello() {
         LocalDateTime now = LocalDateTime.now();
@@ -46,7 +45,7 @@ public class ApiController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponsePhoto> saveImage(
+    public ResponseEntity<ResponsePhoto> savePhoto(
             @RequestHeader("Authorization") String bearerToken,
             @RequestPart("imageFile") MultipartFile multipartFile,
             @RequestPart("photo") Photo photo
