@@ -1,22 +1,29 @@
 package com.pavelkostal.api.apiController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pavelkostal.api.constants.ResponseMessages;
 import com.pavelkostal.api.entity.Photo;
+import com.pavelkostal.api.model.ResponsePhotoSaved;
 import com.pavelkostal.api.service.PhotoService;
 import com.pavelkostal.api.tools.TokenTool;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -32,9 +39,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -56,6 +64,9 @@ class ApiControllerTest {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
+
+    @Value("${base-controller.path}")
+    private String serverUrl;
 
     Photo photo1;
     ObjectMapper objectMapper;
@@ -89,7 +100,8 @@ class ApiControllerTest {
 
         // When
         when(tokenTool.getUniqueUserId(any())).thenReturn(photo1.getPhotoOwner());
-        when(photoService.savePhoto(any())).thenReturn(idFromDb);
+        ResponsePhotoSaved response = new ResponsePhotoSaved(999L, ResponseMessages.PHOTO_SAVED.toString());
+        when(photoService.savePhoto(any(), any(), any())).thenReturn(new ResponseEntity<>(response, HttpStatus.ACCEPTED));
 
         // Then
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
@@ -99,27 +111,6 @@ class ApiControllerTest {
                         .header("Authorization", "Bearer " + idToken)
                         .param("some-random", "4"))
                 .andExpect(status().is(202));
-    }
-
-    @Test
-    @DisplayName("Test saveImage endpoint with invalid GPS")
-    @WithMockUser
-    void itShouldTesSaveImageApiEndpointWithInvalidGps() throws Exception {
-        // Given
-        photo1.setGpsPositionLatitude(500000d);
-        photoAsJson = new MockMultipartFile("photo", "photo", "application/json", objectMapper.writeValueAsString(photo1).getBytes());
-
-        // When
-        // Then
-        when(tokenTool.getUniqueUserId(any())).thenReturn("12345");
-
-        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/data")
-                        .file(imageFile)
-                        .file(photoAsJson)
-                        .header("Authorization", "Bearer " + idToken)
-                        .param("some-random", "4"))
-                .andExpect(status().is4xxClientError());
     }
 
     @Test
@@ -147,29 +138,18 @@ class ApiControllerTest {
         long id = 1;
 
         // When
-        when(photoService.getPhotoById(1L)).thenReturn(Optional.of(photo1));
+        byte[] body = new byte[0];
+        when(photoService.getPhotoById(1L, false)).thenReturn(
+        ResponseEntity
+                .ok()
+                .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+                .body(body));
 
         ResultActions resultActions = mockMvc.perform(get("/api/v1/data/image/" + id)
                 .header("Authorization", "Bearer " + idToken));
 
         // Then
         resultActions.andExpect(status().is2xxSuccessful());
-    }
-
-    @Test
-    @DisplayName("Test getImage by ID endpoint when photo does not exist in DB")
-    @WithMockUser
-    void itShouldTestGetImageEndPointWithInvalidPhotoId() throws Exception {
-        long id = 1;
-
-        // When
-        when(photoService.getPhotoById(1L)).thenReturn(Optional.empty());
-
-        ResultActions resultActions = mockMvc.perform(get("/api/v1/data/image/" + id)
-                .header("Authorization", "Bearer " + idToken));
-
-        // Then
-        resultActions.andExpect(status().is4xxClientError());
     }
 
     @Test
@@ -177,15 +157,109 @@ class ApiControllerTest {
     @WithMockUser
     void itShouldTestGetImagesEndPoint() throws Exception {
         Photo photo2 = new Photo("123", 50.2092567, 15.8327564, "Nove Mesto",null, null, null, null);
+        List<Photo> allImagesForUser = List.of(photo1, photo2);
 
         // When
-        when(photoService.getAllImagesForSelectedUser(any())).thenReturn(List.of(photo1, photo2));
+        byte[] body = new byte[0]; // TODO: remove duplicate code
+        when(photoService.getPhotoById(1L, false)).thenReturn(
+                ResponseEntity
+                        .ok()
+                        .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+                        .body(body));
 
-        ResultActions resultActions = mockMvc.perform(get("/api/v1/data/images")
+        ResultActions resultActions = mockMvc.perform(get("/api/v1/data/images/all-images-for-current-user")
                 .header("Authorization", "Bearer " + idToken));
 
         // Then
         resultActions.andExpect(status().is2xxSuccessful());
+    }
+
+    @Test
+    @DisplayName("Test get photo by ID endpoint")
+    @WithMockUser
+    void itShouldTestGetPhotoById() throws Exception {
+        // Given
+        // When
+        byte[] body = new byte[0]; // TODO: remove duplicate code
+        when(photoService.getPhotoById(1L, false)).thenReturn(
+                ResponseEntity
+                        .ok()
+                        .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+                        .body(body));
+
+        ResultActions resultActions = mockMvc.perform(get("/api/v1/data/image/1")
+                .header("Authorization", "Bearer " + idToken));
+
+        // Then
+        resultActions.andExpect(status().is2xxSuccessful());
+    }
+
+    @Test
+    @DisplayName("Test get photo thumbnail by ID endpoint")
+    @WithMockUser
+    void itShouldTestGetPhotoThumbnailById() throws Exception {
+        // Given
+        // When
+        byte[] body = new byte[0]; // TODO: remove duplicate code
+        when(photoService.getPhotoById(1L, false)).thenReturn(
+                ResponseEntity
+                        .ok()
+                        .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+                        .body(body));
+
+        ResultActions resultActions = mockMvc.perform(get("/api/v1/data/image/thumbnail/1")
+                .header("Authorization", "Bearer " + idToken));
+
+        // Then
+        resultActions.andExpect(status().is2xxSuccessful());
+    }
+
+    @Test
+    @DisplayName("Test get photos by city")
+    @WithMockUser
+    void itShouldTestGetListOfPhotosByCity() throws Exception {
+        // Given
+        // When
+        byte[] body = new byte[0]; // TODO: remove duplicate code
+        when(photoService.getPhotoById(1L, false)).thenReturn(
+                ResponseEntity
+                        .ok()
+                        .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+                        .body(body));
+
+        ResultActions resultActions = mockMvc.perform(get("/api/v1/data/images/Prague")
+                .header("Authorization", "Bearer " + idToken));
+
+        // Then
+        resultActions.andExpect(status().is2xxSuccessful());
+    }
+
+    @Test
+    @DisplayName("Test get photos by city")
+    @WithMockUser
+    void itShouldTestListCities() throws Exception {
+        // Given
+        List<String> listOfCities = List.of("Prague", "Brno");
+
+        // When
+        byte[] body = new byte[0]; // TODO: remove duplicate code
+        when(photoService.getAllCityInDb()).thenReturn(
+                ResponseEntity
+                        .ok()
+                        .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+                        .body(listOfCities));
+
+        MvcResult result = mockMvc.perform(get("/" + serverUrl + "/list-of-cities")
+                        .header("Authorization", "Bearer " + idToken))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Then
+        String content = result.getResponse().getContentAsString();
+
+        for (String city : listOfCities) {
+            assertTrue(content.contains(city));
+        }
     }
 
     public static byte[] toByteArray(BufferedImage bi, String format) {

@@ -20,8 +20,13 @@ public class TokenTool {
 		return token.startsWith("Bearer ") ? token.substring("Bearer ".length()) : token;
 	}
 	
-	public String getUniqueUserId(String token) throws BadJOSEException, ParseException, JOSEException {
-		JWTClaimsSet claims = configurableJWTProcessor.process(getTokenFromBearer(token), null);
-		return claims.getSubject();
+	public String getUniqueUserId(String token) {
+        JWTClaimsSet claims;
+        try {
+            claims = configurableJWTProcessor.process(getTokenFromBearer(token), null);
+        } catch (ParseException | BadJOSEException | JOSEException e) {
+            throw new RuntimeException(e);
+        }
+        return claims.getSubject();
 	}
 }
