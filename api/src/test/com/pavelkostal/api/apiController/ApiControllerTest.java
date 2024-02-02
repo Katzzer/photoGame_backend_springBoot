@@ -41,6 +41,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -92,14 +93,11 @@ class ApiControllerTest {
 
 
     @Test
-    @DisplayName("Test saveImage endpoint")
+    @DisplayName("Test save photo endpoint")
     @WithMockUser
-    void itShouldTesSaveImageApiEndpoint() throws Exception {
+    void itShouldTestSavePhoto() throws Exception {
         // Given
-        long idFromDb = 999L;
-
         // When
-        when(tokenTool.getUniqueUserId(any())).thenReturn(photo1.getPhotoOwner());
         ResponsePhotoSaved response = new ResponsePhotoSaved(999L, ResponseMessages.PHOTO_SAVED.toString());
         when(photoService.savePhoto(any(), any(), any())).thenReturn(new ResponseEntity<>(response, HttpStatus.ACCEPTED));
 
@@ -114,16 +112,18 @@ class ApiControllerTest {
     }
 
     @Test
-    @DisplayName("Test saveImage endpoint with missing photo")
+    @DisplayName("Test save photo endpoint and return 4xx")
     @WithMockUser
-    void itShouldTesSaveImageApiEndpointWithInvalidPhoto() throws Exception {
+    void itShouldTestSavePhotoEndpointAndReturn4xx() throws Exception {
         // Given
         // When
-        // Then
-        when(tokenTool.getUniqueUserId(any())).thenReturn("12345");
+        ResponsePhotoSaved response = new ResponsePhotoSaved(999L, ResponseMessages.PHOTO_SAVED.toString());
+        when(photoService.savePhoto(any(), any(), any())).thenReturn(new ResponseEntity<>(response, HttpStatus.BAD_REQUEST));
 
+        // Then
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/data")
+                        .file(imageFile)
                         .file(photoAsJson)
                         .header("Authorization", "Bearer " + idToken)
                         .param("some-random", "4"))
@@ -131,9 +131,9 @@ class ApiControllerTest {
     }
 
     @Test
-    @DisplayName("Test getImage by ID endpoint")
+    @DisplayName("Test get photo by ID endpoint")
     @WithMockUser
-    void itShouldTestGetImageEndPoint() throws Exception {
+    void itShouldTestGetPhotoEndPoint() throws Exception {
         // Given
         long id = 1;
 
@@ -145,11 +145,14 @@ class ApiControllerTest {
                 .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
                 .body(body));
 
-        ResultActions resultActions = mockMvc.perform(get("/api/v1/data/image/" + id)
-                .header("Authorization", "Bearer " + idToken));
+        MvcResult result = mockMvc.perform(get("/api/v1/data/image/" + id)
+                        .header("Authorization", "Bearer " + idToken))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
 
         // Then
-        resultActions.andExpect(status().is2xxSuccessful());
+        String contentType = result.getResponse().getContentType();
+        assertEquals("application/octet-stream", contentType);
     }
 
     @Test
