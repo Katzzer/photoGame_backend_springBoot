@@ -33,7 +33,7 @@ public class ApiController {
         return "Hello from Spring Boot Application Photo Game (" + now.format(dateTimeFormatter) +")";
     }
 
-    @PostMapping
+    @PostMapping("/save-photo")
     public ResponseEntity<ResponsePhoto> savePhoto(
             @RequestHeader("Authorization") String bearerToken,
             @RequestPart("imageFile") MultipartFile multipartFile,
@@ -42,27 +42,22 @@ public class ApiController {
         return photoService.savePhoto(bearerToken, multipartFile, photo);
     }
 
-    @GetMapping("/image/{imageId}")
-    public ResponseEntity<byte[]> getImageById(@PathVariable("imageId") Long imageId) throws IOException {
+    @GetMapping("/photo/{photoId}")
+    public ResponseEntity<byte[]> getImageById(@PathVariable("photoId") Long imageId) throws IOException {
        return photoService.getPhotoById(imageId, false);
     }
 
-    @GetMapping("/image/thumbnail/{imageId}")
+    @GetMapping("/photo/thumbnail/{imageId}")
     public ResponseEntity<byte[]> getImageThumbnailById(@PathVariable("imageId") Long imageId) throws IOException {
         return photoService.getPhotoById(imageId, true);
     }
     
-//    @GetMapping("/images")
-//    public ResponseEntity<List<Photo>> getAllImagesForCurrentUser(@RequestHeader("Authorization") String bearerToken) {
-//       return photoService.getAllImagesForSelectedUser(bearerToken);
-//    }
-
-    @GetMapping("/images/{city}")
+    @GetMapping("/photos/{city}")
     public ResponseEntity<List<Photo>> getAllPhotosByCity(@PathVariable("city") String city) {
         return photoService.getAllPhotosByCity(city);
     }
 
-    @GetMapping("/images/all-images-for-current-user")
+    @GetMapping("/photos/all-photos-for-current-user")
     public ResponseEntity<List<Photo>> getAllImagesForSelectedUser(@RequestHeader("Authorization") String bearerToken) {
         return photoService.getAllImagesForSelectedUser(bearerToken);
     }

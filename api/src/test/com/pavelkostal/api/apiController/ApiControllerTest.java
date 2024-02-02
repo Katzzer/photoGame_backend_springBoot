@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -46,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -66,7 +68,7 @@ class ApiControllerTest {
     @Autowired
     private WebApplicationContext webApplicationContext;
 
-    @Value("${base-controller.path}")
+    @Value("${base-controller-for-test.path}")
     private String serverUrl;
 
     Photo photo1;
@@ -103,31 +105,12 @@ class ApiControllerTest {
 
         // Then
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/data")
+        mockMvc.perform(MockMvcRequestBuilders.multipart(serverUrl + "/save-photo")
                         .file(imageFile)
                         .file(photoAsJson)
                         .header("Authorization", "Bearer " + idToken)
                         .param("some-random", "4"))
                 .andExpect(status().is(202));
-    }
-
-    @Test
-    @DisplayName("Test save photo endpoint and return 4xx")
-    @WithMockUser
-    void itShouldTestSavePhotoEndpointAndReturn4xx() throws Exception {
-        // Given
-        // When
-        ResponsePhotoSaved response = new ResponsePhotoSaved(999L, ResponseMessages.PHOTO_SAVED.toString());
-        when(photoService.savePhoto(any(), any(), any())).thenReturn(new ResponseEntity<>(response, HttpStatus.BAD_REQUEST));
-
-        // Then
-        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/data")
-                        .file(imageFile)
-                        .file(photoAsJson)
-                        .header("Authorization", "Bearer " + idToken)
-                        .param("some-random", "4"))
-                .andExpect(status().is4xxClientError());
     }
 
     @Test
@@ -145,7 +128,7 @@ class ApiControllerTest {
                 .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
                 .body(body));
 
-        MvcResult result = mockMvc.perform(get("/api/v1/data/image/" + id)
+        MvcResult result = mockMvc.perform(get(serverUrl + "/photo/" + id)
                         .header("Authorization", "Bearer " + idToken))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -170,7 +153,7 @@ class ApiControllerTest {
                         .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
                         .body(body));
 
-        ResultActions resultActions = mockMvc.perform(get("/api/v1/data/images/all-images-for-current-user")
+        ResultActions resultActions = mockMvc.perform(get(serverUrl + "/photos/all-photos-for-current-user")
                 .header("Authorization", "Bearer " + idToken));
 
         // Then
@@ -190,7 +173,7 @@ class ApiControllerTest {
                         .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
                         .body(body));
 
-        ResultActions resultActions = mockMvc.perform(get("/api/v1/data/image/1")
+        ResultActions resultActions = mockMvc.perform(get(serverUrl + "/photo/1")
                 .header("Authorization", "Bearer " + idToken));
 
         // Then
@@ -210,7 +193,7 @@ class ApiControllerTest {
                         .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
                         .body(body));
 
-        ResultActions resultActions = mockMvc.perform(get("/api/v1/data/image/thumbnail/1")
+        ResultActions resultActions = mockMvc.perform(get(serverUrl + "/photo/thumbnail/1")
                 .header("Authorization", "Bearer " + idToken));
 
         // Then
@@ -230,7 +213,7 @@ class ApiControllerTest {
                         .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
                         .body(body));
 
-        ResultActions resultActions = mockMvc.perform(get("/api/v1/data/images/Prague")
+        ResultActions resultActions = mockMvc.perform(get(serverUrl + "/photos/Prague")
                 .header("Authorization", "Bearer " + idToken));
 
         // Then
@@ -252,7 +235,7 @@ class ApiControllerTest {
                         .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
                         .body(listOfCities));
 
-        MvcResult result = mockMvc.perform(get("/" + serverUrl + "/list-of-cities")
+        MvcResult result = mockMvc.perform(get(serverUrl + "/list-of-cities")
                         .header("Authorization", "Bearer " + idToken))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -263,6 +246,18 @@ class ApiControllerTest {
         for (String city : listOfCities) {
             assertTrue(content.contains(city));
         }
+    }
+
+    @Test
+    @WithAnonymousUser
+    @DisplayName("Test that every endpoint is secured")
+    void itShouldTestThatEveryEndpointIsSecured() throws Exception {
+        this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/save-photo")).andDo(print()).andExpect(status().is4xxClientError());
+        this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/photo/1")).andDo(print()).andExpect(status().is4xxClientError());
+        this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/photo/thumbnail/1")).andDo(print()).andExpect(status().is4xxClientError());
+        this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/photos/city")).andDo(print()).andExpect(status().is4xxClientError());
+        this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/photos/all-photos-for-current-user")).andDo(print()).andExpect(status().is4xxClientError());
+        this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/list-of-cities")).andDo(print()).andExpect(status().is4xxClientError());
     }
 
     public static byte[] toByteArray(BufferedImage bi, String format) {
