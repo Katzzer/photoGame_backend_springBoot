@@ -1,13 +1,11 @@
 package com.pavelkostal.api.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 @Entity(name = "Photo")
 @Table(name = "photo")
-@Getter
-@Setter
+@Data
 public class Photo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

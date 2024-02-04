@@ -1,5 +1,6 @@
 package com.pavelkostal.api.apiController;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pavelkostal.api.constants.ResponseMessages;
 import com.pavelkostal.api.entity.Photo;
@@ -42,8 +43,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -72,6 +72,7 @@ class ApiControllerTest {
     private String serverUrl;
 
     Photo photo1;
+    Photo photo2;
     ObjectMapper objectMapper;
     MockMultipartFile imageFile;
     MockMultipartFile photoAsJson;
@@ -86,6 +87,7 @@ class ApiControllerTest {
         image = ImageIO.read(file);
 
         photo1 = new Photo("123", 50.2092567, 15.8327564,"Hradec Kralove",null, null, null, null);
+        photo2 = new Photo("123", 50.08804, 14.42076,"Prague",null, null, null, null);
         imageFile = new MockMultipartFile("imageFile", "filename.txt", MediaType.IMAGE_JPEG_VALUE,  toByteArray(image, "jpg"));
         objectMapper = new ObjectMapper();
         photoAsJson = new MockMultipartFile("photo", "photo", "application/json", objectMapper.writeValueAsString(photo1).getBytes());
@@ -213,7 +215,7 @@ class ApiControllerTest {
                         .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
                         .body(body));
 
-        ResultActions resultActions = mockMvc.perform(get(serverUrl + "/photos/Prague")
+        ResultActions resultActions = mockMvc.perform(get(serverUrl + "/find-photos-by-location/Czech republic/Prague")
                 .header("Authorization", "Bearer " + idToken));
 
         // Then
@@ -221,31 +223,91 @@ class ApiControllerTest {
     }
 
     @Test
-    @DisplayName("Test get photos by city")
+    @DisplayName("Test get list of countries")
     @WithMockUser
-    void itShouldTestListCities() throws Exception {
+    void itShouldTestGeListOfCountries() throws Exception {
         // Given
-        List<String> listOfCities = List.of("Prague", "Brno");
+        List<String> listOfCountries = List.of("Czech Republic", "Germany");
 
         // When
-        byte[] body = new byte[0]; // TODO: remove duplicate code
-        when(photoService.getAllCityInDb()).thenReturn(
+        when(photoService.findAllCountries()).thenReturn(
                 ResponseEntity
                         .ok()
                         .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
-                        .body(listOfCities));
+                        .body(listOfCountries));
 
-        MvcResult result = mockMvc.perform(get(serverUrl + "/list-of-cities")
+        MvcResult result = mockMvc.perform(get(serverUrl + "/find-photos-by-location")
                         .header("Authorization", "Bearer " + idToken))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         // Then
-        String content = result.getResponse().getContentAsString();
+        String resultContent = result.getResponse().getContentAsString();
 
-        for (String city : listOfCities) {
-            assertTrue(content.contains(city));
+        for (String country : listOfCountries) {
+            assertTrue(resultContent.contains(country));
         }
+    }
+
+    @Test
+    @DisplayName("Test get list of cities by country")
+    @WithMockUser
+    void itShouldTestGeListOfCitiesByCountry() throws Exception {
+        // Given
+        String selectedCountry = "Hradec Kralove";
+        List<String> listOfCountries = List.of("Czech Republic", "Germany");
+
+        // When
+        when(photoService.findAllCityByCountry(selectedCountry)).thenReturn(
+                ResponseEntity
+                        .ok()
+                        .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+                        .body(listOfCountries));
+
+        MvcResult result = mockMvc.perform(get(serverUrl + "/find-photos-by-location/" + selectedCountry)
+                        .header("Authorization", "Bearer " + idToken))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Then
+        String resultContent = result.getResponse().getContentAsString();
+
+        for (String country : listOfCountries) {
+            assertTrue(resultContent.contains(country));
+        }
+    }
+
+    @Test
+    @DisplayName("Test get list of photos by country and city")
+    @WithMockUser
+    void itShouldTestGeListOfPhotosByCountryAndCity() throws Exception {
+        // Given
+        String selectedCountry = "Czech republic";
+        String selectedCity = "Hradec Kralove";
+        photo1.setId(1L);
+        photo2.setId(2L);
+        List<Photo> listOfPhotos = List.of(photo1, photo2);
+
+        // When
+        when(photoService.findAllPhotosByCountryAndCity(selectedCountry, selectedCity)).thenReturn(
+                ResponseEntity
+                        .ok()
+                        .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+                        .body(listOfPhotos));
+
+        MvcResult result = mockMvc.perform(get(serverUrl + "/find-photos-by-location/" + selectedCountry + "/" + selectedCity)
+                        .header("Authorization", "Bearer " + idToken))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Then
+        String resultContent = result.getResponse().getContentAsString();
+        ObjectMapper mapper = new ObjectMapper();
+        List<Photo> photosAsResponse = mapper.readValue(resultContent, new TypeReference<>() {
+        });
+
+        assertEquals(listOfPhotos.size(), photosAsResponse.size());
+        assertTrue(listOfPhotos.containsAll(photosAsResponse));
     }
 
     @Test

@@ -10,11 +10,14 @@ import java.util.List;
 @Repository
 public interface PhotoRepository extends JpaRepository<Photo, Long> {
 
-    @Query("SELECT city FROM Photo ")
-    List<String> findAllCity();
+    @Query("SELECT DISTINCT(country) FROM Photo WHERE country IS NOT NULL")
+    List<String> findAllCountries();
 
-    @Query("SELECT photo FROM Photo photo WHERE photo.city = ?1")
-    List<Photo> findAllPhotosByCity(String city);
+    @Query("SELECT DISTINCT(city) FROM Photo WHERE country = ?1 AND city IS NOT NULL")
+    List<String> findAllCiyByCountry(String country);
+
+    @Query("SELECT photo FROM Photo photo WHERE photo.country = ?1 AND photo.city = ?2")
+    List<Photo> findAllPhotosByCountryAndCity(String country, String city);
 
     @Query("SELECT photo FROM Photo photo WHERE photo.photoOwner = ?1")
     List<Photo> findPhotosByUniqueUserId(String uniqueUserId);

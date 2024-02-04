@@ -38,7 +38,7 @@ public class ApiController {
             @RequestHeader("Authorization") String bearerToken,
             @RequestPart("imageFile") MultipartFile multipartFile,
             @RequestPart("photo") Photo photo
-    ) throws BadJOSEException, ParseException, JOSEException {
+    ) {
         return photoService.savePhoto(bearerToken, multipartFile, photo);
     }
 
@@ -47,24 +47,30 @@ public class ApiController {
        return photoService.getPhotoById(imageId, false);
     }
 
-    @GetMapping("/photo/thumbnail/{imageId}")
-    public ResponseEntity<byte[]> getImageThumbnailById(@PathVariable("imageId") Long imageId) throws IOException {
-        return photoService.getPhotoById(imageId, true);
-    }
-    
-    @GetMapping("/photos/{city}")
-    public ResponseEntity<List<Photo>> getAllPhotosByCity(@PathVariable("city") String city) {
-        return photoService.getAllPhotosByCity(city);
+    @GetMapping("/photo/thumbnail/{photoId}")
+    public ResponseEntity<byte[]> getImageThumbnailById(@PathVariable("photoId") Long photoId) throws IOException {
+        return photoService.getPhotoById(photoId, true);
     }
 
     @GetMapping("/photos/all-photos-for-current-user")
     public ResponseEntity<List<Photo>> getAllImagesForSelectedUser(@RequestHeader("Authorization") String bearerToken) {
-        return photoService.getAllImagesForSelectedUser(bearerToken);
+        return photoService.getAllPhotosForSelectedUser(bearerToken);
     }
 
-    @GetMapping("/list-of-cities")
-    public ResponseEntity<List<String>> getAllCityInDb() {
-       return photoService.getAllCityInDb();
+    @GetMapping("/find-photos-by-location")
+    public ResponseEntity<List<String>> findAllCountries() {
+        return photoService.findAllCountries();
     }
+
+    @GetMapping("/find-photos-by-location/{country}")
+    public ResponseEntity<List<String>> findAllCityByCountry(@PathVariable("country") String country) {
+        return photoService.findAllCityByCountry(country);
+    }
+
+    @GetMapping("/find-photos-by-location/{country}/{city}")
+    public ResponseEntity<List<Photo>> findAllPhotosByCountryAndCity(@PathVariable("country") String country, @PathVariable("city") String city) {
+        return photoService.findAllPhotosByCountryAndCity(country, city);
+    }
+
     
 }

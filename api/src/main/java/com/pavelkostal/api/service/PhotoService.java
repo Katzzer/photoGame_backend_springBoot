@@ -1,7 +1,5 @@
 package com.pavelkostal.api.service;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.proc.BadJOSEException;
 import com.pavelkostal.api.constants.ResponseMessages;
 import com.pavelkostal.api.entity.Photo;
 import com.pavelkostal.api.model.ResponsePhoto;
@@ -20,13 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -37,7 +32,7 @@ public class PhotoService {
     private final GPSPositionTools gpsPositionTools;
     private final TokenTool tokenTool;
 
-    public ResponseEntity<ResponsePhoto> savePhoto(String bearerToken, MultipartFile multipartFile, Photo photo) throws BadJOSEException, ParseException, JOSEException {
+    public ResponseEntity<ResponsePhoto> savePhoto(String bearerToken, MultipartFile multipartFile, Photo photo) {
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
         photo.setPhotoOwner(uniqueUserId);
 
@@ -85,23 +80,24 @@ public class PhotoService {
                 .body(imageAsBytes);
     }
 
-    public ResponseEntity<List<Photo>> getAllImagesForSelectedUser(String bearerToken) {
+    public ResponseEntity<List<Photo>> getAllPhotosForSelectedUser(String bearerToken) {
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
         List<Photo> allImagesForUser = photoRepository.findPhotosByUniqueUserId(uniqueUserId);
         return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);
     }
 
-    public  ResponseEntity<List<Photo>> getAllPhotosByCity(String city) {
-        List<Photo> allImagesForUser = photoRepository.findAllPhotosByCity(city);
-        return new ResponseEntity<>(allImagesForUser, HttpStatus.OK);
+    public ResponseEntity<List<String>> findAllCountries() {
+        List<String> allCountries = photoRepository.findAllCountries();
+        return new ResponseEntity<>(Tools.replaceUnderscoreWithSpaceForString(allCountries), HttpStatus.OK);
     }
 
-    public ResponseEntity<List<String>> getAllCityInDb() {
-        List<String> allCityInDb = photoRepository.findAllCity();
-        List<String> uniqueCities = allCityInDb.stream()
-                .distinct()
-                .toList();
+    public ResponseEntity<List<String>> findAllCityByCountry(String country) {
+        List<String> allCountries = photoRepository.findAllCiyByCountry(country);
+        return new ResponseEntity<>(Tools.replaceUnderscoreWithSpaceForString(allCountries), HttpStatus.OK);
+    }
 
-        return new ResponseEntity<>(Tools.replaceUnderscoreWithSpaceForString(uniqueCities), HttpStatus.OK);
+    public ResponseEntity<List<Photo>> findAllPhotosByCountryAndCity(String country, String city) {
+        List<Photo> allCountries = photoRepository.findAllPhotosByCountryAndCity(country, city);
+        return new ResponseEntity<>(allCountries, HttpStatus.OK);
     }
 }
