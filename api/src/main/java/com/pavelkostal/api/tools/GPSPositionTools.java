@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class GPSPositionTools {
 
     private final PositionStack positionStack;
+    private final Tools tools;
 
     @Value("${position.stack.access.key}")
     String positionStackAccessKey;
@@ -23,33 +24,6 @@ public class GPSPositionTools {
         return longitude >= -180 && longitude <= 180;
     }
 
-//    public boolean isValidGPSPositionAtEnteredCity(Photo photo) {
-//        if (photo.getCity() == null) return true;
-//
-//        PositionStackResponseDataWrapper data;
-//
-//        try {
-//            data = positionStack.getDataByCity(positionStackAccessKey, photo.getCity());
-//        } catch (Exception e) {
-//            logger.info("Exception in positionStack: " + e);
-//            return false;
-//        }
-//
-//        for (PositionStackResponseDataValues values : data.data()) {
-//            double latitudeOfEnteredCity = values.latitude();
-//            double longitudeOfEnteredCity = values.longitude();
-//            double latitudeFromPhoto = photo.getGpsPositionLatitude();
-//            double longitudeFromPhoto = photo.getGpsPositionLongitude();
-//
-//            double distance = getDistanceBetweenTwoGpsPoints(latitudeOfEnteredCity, latitudeFromPhoto, longitudeOfEnteredCity, longitudeFromPhoto);
-//            if (distance < 50) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
-    
     public void setPositionInformationFromGpsOrCityToCurrentPhoto(Photo photo) {
         String query;
         PositionStackResponseDataWrapper dataByGpsOrCity;
@@ -64,23 +38,23 @@ public class GPSPositionTools {
 
         for (PositionStackResponseDataValues values : dataByGpsOrCity.data()) {
             if (photo.getCity() == null && !values.locality().equals("null")) {
-                photo.setCity(values.locality());
+                photo.setCity(tools.replaceSpecialCharactersInString(values.locality()));
             }
 
             if (photo.getRegion() == null && !values.region().equals("null")) {
-                photo.setRegion(values.region());
+                photo.setRegion(tools.replaceSpecialCharactersInString(values.region()));
             }
 
             if (photo.getLocality() == null && values.locality() != null && !values.locality().equals("null")) {
-                photo.setLocality(values.locality());
+                photo.setLocality(tools.replaceSpecialCharactersInString(values.locality()));
             }
 
             if (photo.getCountry() == null && values.country() != null && !values.country().equals("null")) {
-                photo.setCountry(values.country());
+                photo.setCountry(tools.replaceSpecialCharactersInString(values.country()));
             }
             
             if (photo.getContinent() == null && values.continent() != null && !values.continent().equals("null")) {
-                photo.setContinent(values.continent());
+                photo.setContinent(tools.replaceSpecialCharactersInString(values.continent()));
             }
 
             if (photo.getGpsPositionLatitude() == null) {

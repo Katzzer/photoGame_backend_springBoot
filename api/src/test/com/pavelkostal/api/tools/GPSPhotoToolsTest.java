@@ -49,19 +49,6 @@ class GPSPhotoToolsTest {
         assertFalse(validGps);
     }
 
-//    @Test
-//    void isValidGPSPositionAtEnteredCity() {
-//        // given
-//
-//        // when
-//        boolean validGPSPositionAtEnteredCity1 = underTest.isValidGPSPositionAtEnteredCity(photo1);
-//        boolean validGPSPositionAtEnteredCity2 = underTest.isValidGPSPositionAtEnteredCity(photo2);
-//
-//        // then
-//        assertTrue(validGPSPositionAtEnteredCity1);
-//        assertTrue(validGPSPositionAtEnteredCity2);
-//    }
-
     @Test
     void getPositionFromGps() {
         // Given
@@ -74,8 +61,8 @@ class GPSPhotoToolsTest {
         assertEquals(longitudeForPosition1, photo1.getGpsPositionLongitude());
         assertEquals(latitudeForPosition1, photo1.getGpsPositionLatitude());
         assertEquals("Hradec Kralove", photo1.getCity());
-        assertEquals("Hradec Králové", photo1.getRegion());
-        assertEquals("Hradec Králové", photo1.getLocality());
+        assertEquals("Hradec Kralove", photo1.getRegion());
+        assertEquals("Hradec Kralove", photo1.getLocality());
         assertEquals("Czechia", photo1.getCountry());
         assertEquals("Europe", photo1.getContinent());
 

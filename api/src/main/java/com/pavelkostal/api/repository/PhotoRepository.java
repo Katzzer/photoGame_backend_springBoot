@@ -14,7 +14,7 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
     List<String> findAllCountries();
 
     @Query("SELECT DISTINCT(city) FROM Photo WHERE country = ?1 AND city IS NOT NULL")
-    List<String> findAllCiyByCountry(String country);
+    List<String> findAllCityByCountry(String country);
 
     @Query("SELECT photo FROM Photo photo WHERE photo.country = ?1 AND photo.city = ?2")
     List<Photo> findAllPhotosByCountryAndCity(String country, String city);

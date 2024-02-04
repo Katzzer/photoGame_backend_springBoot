@@ -31,6 +31,7 @@ public class PhotoService {
     private final PhotoRepository photoRepository;
     private final GPSPositionTools gpsPositionTools;
     private final TokenTool tokenTool;
+    private final Tools tools;
 
     public ResponseEntity<ResponsePhoto> savePhoto(String bearerToken, MultipartFile multipartFile, Photo photo) {
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
@@ -51,7 +52,7 @@ public class PhotoService {
         Photo savedPhoto = photoRepository.save(photo);
         long savedPhotoId = savedPhoto.getId();
 
-        Tools.savePhotoWithThumbnail(multipartFile, savedPhotoId);
+        tools.savePhotoWithThumbnail(multipartFile, savedPhotoId);
 
         ResponsePhotoSaved response = new ResponsePhotoSaved(savedPhotoId, ResponseMessages.PHOTO_SAVED.toString());
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
@@ -88,12 +89,12 @@ public class PhotoService {
 
     public ResponseEntity<List<String>> findAllCountries() {
         List<String> allCountries = photoRepository.findAllCountries();
-        return new ResponseEntity<>(Tools.replaceUnderscoreWithSpaceForString(allCountries), HttpStatus.OK);
+        return new ResponseEntity<>(tools.replaceUnderscoreWithSpaceForString(allCountries), HttpStatus.OK);
     }
 
     public ResponseEntity<List<String>> findAllCityByCountry(String country) {
-        List<String> allCountries = photoRepository.findAllCiyByCountry(country);
-        return new ResponseEntity<>(Tools.replaceUnderscoreWithSpaceForString(allCountries), HttpStatus.OK);
+        List<String> allCountries = photoRepository.findAllCityByCountry(country);
+        return new ResponseEntity<>(tools.replaceUnderscoreWithSpaceForString(allCountries), HttpStatus.OK);
     }
 
     public ResponseEntity<List<Photo>> findAllPhotosByCountryAndCity(String country, String city) {

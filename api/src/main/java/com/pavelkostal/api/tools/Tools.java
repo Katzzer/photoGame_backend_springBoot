@@ -1,6 +1,8 @@
 package com.pavelkostal.api.tools;
 
+import lombok.AllArgsConstructor;
 import org.imgscalr.Scalr;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -9,9 +11,11 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
+@AllArgsConstructor
 public class Tools {
 
-    public static List<String> replaceUnderscoreWithSpaceForString(List<String> listOfCity) {
+    public List<String> replaceUnderscoreWithSpaceForString(List<String> listOfCity) {
         List<String> newList = new ArrayList<>();
         for (String city : listOfCity) {
             newList.add(city.replace("_", " "));
@@ -20,7 +24,7 @@ public class Tools {
         return newList;
     }
     
-    public static String replaceSpecialCharactersInString(String text) {
+    public String replaceSpecialCharactersInString(String text) {
         text = text.replace("ě", "e");
         text = text.replace("š", "s");
         text = text.replace("č", "c");
@@ -47,13 +51,13 @@ public class Tools {
         return text;
     }
 
-    public static void savePhotoWithThumbnail(MultipartFile multipartFile, long savedPhotoId) {
+    public void savePhotoWithThumbnail(MultipartFile multipartFile, long savedPhotoId) {
         byte[] bufferedImage = getBytesFromMultipartFile(multipartFile);
         savePhoto(bufferedImage, savedPhotoId);
         savePhotoThumbnail(bufferedImage, savedPhotoId);
     }
 
-    private static byte[] getBytesFromMultipartFile(MultipartFile multipartFile) {
+    private byte[] getBytesFromMultipartFile(MultipartFile multipartFile) {
         InputStream originalImage;
         try {
             originalImage = multipartFile.getInputStream();
@@ -76,7 +80,7 @@ public class Tools {
         return buffer;
     }
 
-    private static void savePhoto(byte[] bufferedImage, long savedPhotoId) {
+    private void savePhoto(byte[] bufferedImage, long savedPhotoId) {
         String imageName = savedPhotoId + ".jpeg";
         File targetFile = new File("r:\\" + imageName);
 
@@ -87,8 +91,8 @@ public class Tools {
         }
     }
 
-    private static void savePhotoThumbnail(byte[] bufferedImage, long savedPhotoId) {
-        byte[] thumbnail = Tools.createThumbnail(bufferedImage);
+    private void savePhotoThumbnail(byte[] bufferedImage, long savedPhotoId) {
+        byte[] thumbnail = createThumbnail(bufferedImage);
         String thumbnailImageName = savedPhotoId + "_thumbnail.jpeg";
         File thumbnailtargetFile = new File("r:\\" + thumbnailImageName);
 
@@ -99,7 +103,7 @@ public class Tools {
         }
     }
 
-    private static byte[] createThumbnail(byte[] originalImage) {
+    private byte[] createThumbnail(byte[] originalImage) {
         InputStream helperInputStream = new ByteArrayInputStream(originalImage);
         InputStream inputStream = new ByteArrayInputStream(originalImage);
 
@@ -134,5 +138,17 @@ public class Tools {
             throw new RuntimeException(e);
         }
         return byteArrayOutputStream.toByteArray();
+    }
+
+    public byte[] toByteArray(BufferedImage bi, String format) {
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(bi, format, baos);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return baos.toByteArray();
+
     }
 }

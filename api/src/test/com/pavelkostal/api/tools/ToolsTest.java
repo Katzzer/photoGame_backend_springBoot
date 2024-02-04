@@ -1,31 +1,18 @@
 package com.pavelkostal.api.tools;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
+@ActiveProfiles("test")
 class ToolsTest {
 
-//    @Test
-//    void itShouldCheckIfValidImageWasSent() {
-//        // Given
-//        String imageJpeg = "data:image/jpeg;base64,someValue";
-//        String imageJpg = "data:image/jpg;base64,someValue";
-//        String imagePng = "data:image/png;base64,someValue";
-//        String imageInvalid = "someValue,someValue";
-//
-//        // When
-//        boolean validImageJpeg = Tools.isValidImage(imageJpeg);
-//        boolean validImageJpg = Tools.isValidImage(imageJpg);
-//        boolean validImagePng = Tools.isValidImage(imagePng);
-//        boolean invalidImage = Tools.isValidImage(imageInvalid);
-//
-//        // Then
-//        assertTrue(validImageJpeg);
-//        assertTrue(validImageJpg);
-//        assertTrue(validImagePng);
-//        assertFalse(invalidImage);
-//    }
+    @Autowired
+    Tools underTest;
 
     @Test
     void replaceDiacriticsInString() {
@@ -34,8 +21,8 @@ class ToolsTest {
         String specialCharacters = "ěščřžýáíéúůĚŠČŘŽÝÁÍÉÚ";
 
         // When
-        String cityWithReplacedText = Tools.replaceSpecialCharactersInString(city);
-        String replacedSpecialCharacters = Tools.replaceSpecialCharactersInString(specialCharacters);
+        String cityWithReplacedText = underTest.replaceSpecialCharactersInString(city);
+        String replacedSpecialCharacters = underTest.replaceSpecialCharactersInString(specialCharacters);
 
         // Then
         assertEquals("Hradec Kralove", cityWithReplacedText);

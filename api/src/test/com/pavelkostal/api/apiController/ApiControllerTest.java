@@ -7,6 +7,7 @@ import com.pavelkostal.api.entity.Photo;
 import com.pavelkostal.api.model.ResponsePhotoSaved;
 import com.pavelkostal.api.service.PhotoService;
 import com.pavelkostal.api.tools.TokenTool;
+import com.pavelkostal.api.tools.Tools;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -66,6 +66,9 @@ class ApiControllerTest {
     TokenTool tokenTool;
 
     @Autowired
+    Tools tools;
+
+    @Autowired
     private WebApplicationContext webApplicationContext;
 
     @Value("${base-controller-for-test.path}")
@@ -74,21 +77,21 @@ class ApiControllerTest {
     Photo photo1;
     Photo photo2;
     ObjectMapper objectMapper;
-    MockMultipartFile imageFile;
+    MockMultipartFile photoFile;
     MockMultipartFile photoAsJson;
 
     private static final String IMAGE_FILE_NAME = "image.jpg";
 
     @BeforeEach
     public void beforeEach() throws IOException, URISyntaxException {
-        BufferedImage image;
+        BufferedImage photo;
         URL url = getClass().getResource(IMAGE_FILE_NAME);
         File file = Paths.get(url.toURI()).toFile();
-        image = ImageIO.read(file);
+        photo = ImageIO.read(file);
 
         photo1 = new Photo("123", 50.2092567, 15.8327564,"Hradec Kralove",null, null, null, null);
         photo2 = new Photo("123", 50.08804, 14.42076,"Prague",null, null, null, null);
-        imageFile = new MockMultipartFile("imageFile", "filename.txt", MediaType.IMAGE_JPEG_VALUE,  toByteArray(image, "jpg"));
+        photoFile = new MockMultipartFile("imageFile", "filename.txt", MediaType.IMAGE_JPEG_VALUE,  tools.toByteArray(photo, "jpg"));
         objectMapper = new ObjectMapper();
         photoAsJson = new MockMultipartFile("photo", "photo", "application/json", objectMapper.writeValueAsString(photo1).getBytes());
     }
@@ -108,7 +111,7 @@ class ApiControllerTest {
         // Then
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         mockMvc.perform(MockMvcRequestBuilders.multipart(serverUrl + "/save-photo")
-                        .file(imageFile)
+                        .file(photoFile)
                         .file(photoAsJson)
                         .header("Authorization", "Bearer " + idToken)
                         .param("some-random", "4"))
@@ -303,8 +306,7 @@ class ApiControllerTest {
         // Then
         String resultContent = result.getResponse().getContentAsString();
         ObjectMapper mapper = new ObjectMapper();
-        List<Photo> photosAsResponse = mapper.readValue(resultContent, new TypeReference<>() {
-        });
+        List<Photo> photosAsResponse = mapper.readValue(resultContent, new TypeReference<>() {});
 
         assertEquals(listOfPhotos.size(), photosAsResponse.size());
         assertTrue(listOfPhotos.containsAll(photosAsResponse));
@@ -319,18 +321,9 @@ class ApiControllerTest {
         this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/photo/thumbnail/1")).andDo(print()).andExpect(status().is4xxClientError());
         this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/photos/city")).andDo(print()).andExpect(status().is4xxClientError());
         this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/photos/all-photos-for-current-user")).andDo(print()).andExpect(status().is4xxClientError());
-        this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/list-of-cities")).andDo(print()).andExpect(status().is4xxClientError());
+        this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/find-photos-by-location")).andDo(print()).andExpect(status().is4xxClientError());
+        this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/find-photos-by-location/someCountry")).andDo(print()).andExpect(status().is4xxClientError());
+        this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/find-photos-by-location/someCountry/someCity")).andDo(print()).andExpect(status().is4xxClientError());
     }
 
-    public static byte[] toByteArray(BufferedImage bi, String format) {
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            ImageIO.write(bi, format, baos);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return baos.toByteArray();
-
-    }
 }
