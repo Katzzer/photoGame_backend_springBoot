@@ -14,6 +14,10 @@
 - H2 database runs on `http://localhost:8080/h2-console`
 - Basic api url is `http://localhost:8080/api/v1/data`
 
+## Test review
+- To review test coverage run `mvn test` (use command line or Maven action in IntelliJ Idea)
+- Go to `api/target/site/jacoco/index.html` to see code coverage
+
 ## Docker
 
 ## Create Docker image

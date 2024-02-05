@@ -1,7 +1,5 @@
 package com.pavelkostal.api.apiController;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.proc.BadJOSEException;
 import com.pavelkostal.api.entity.Photo;
 import com.pavelkostal.api.model.ResponsePhoto;
 import com.pavelkostal.api.service.PhotoService;
@@ -12,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
