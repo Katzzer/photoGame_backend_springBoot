@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class GPSPhotoToolsTest {
+class GPSPositionToolsTest {
 
     @Autowired
     GPSPositionTools underTest;
@@ -30,7 +30,7 @@ class GPSPhotoToolsTest {
         double longitude = 15.8327564;
 
         // When
-        boolean validGps = GPSPositionTools.isValidGps(latitude, longitude);
+        boolean validGps = underTest.isValidGps(latitude, longitude);
 
         // Then
         assertTrue(validGps);
@@ -43,7 +43,7 @@ class GPSPhotoToolsTest {
         double longitude = 190;
 
         // When
-        boolean validGps = GPSPositionTools.isValidGps(latitude, longitude);
+        boolean validGps = underTest.isValidGps(latitude, longitude);
 
         // Then
         assertFalse(validGps);

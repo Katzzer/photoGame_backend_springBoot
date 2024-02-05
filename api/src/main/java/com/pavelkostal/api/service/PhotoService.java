@@ -37,7 +37,7 @@ public class PhotoService {
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
         photo.setPhotoOwner(uniqueUserId);
 
-        if (!GPSPositionTools.isValidGps(photo.getGpsPositionLatitude(), photo.getGpsPositionLongitude())) {
+        if (!gpsPositionTools.isValidGps(photo.getGpsPositionLatitude(), photo.getGpsPositionLongitude())) {
             log.warn(ResponseMessages.INVALID_GPS.toString());
             return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS.toString()), HttpStatus.BAD_REQUEST);
         }

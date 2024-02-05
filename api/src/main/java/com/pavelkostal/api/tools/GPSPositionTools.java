@@ -18,7 +18,7 @@ public class GPSPositionTools {
     @Value("${position.stack.access.key}")
     String positionStackAccessKey;
 
-    public static boolean isValidGps(Double latitude, Double longitude) {
+    public boolean isValidGps(Double latitude, Double longitude) {
         if (latitude == null & latitude == null) return true;
         if (latitude < -90 || latitude > 90) return false;
         return longitude >= -180 && longitude <= 180;
