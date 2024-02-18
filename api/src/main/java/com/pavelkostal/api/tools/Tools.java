@@ -1,5 +1,8 @@
 package com.pavelkostal.api.tools;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import lombok.AllArgsConstructor;
 import org.imgscalr.Scalr;
 import org.springframework.stereotype.Component;
@@ -8,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,6 +110,7 @@ public class Tools {
     private byte[] createThumbnail(byte[] originalImage) {
         InputStream helperInputStream = new ByteArrayInputStream(originalImage);
         InputStream inputStream = new ByteArrayInputStream(originalImage);
+        boolean isImagePortrait = isImagePortrait(originalImage);
 
         int imageWidth;
         int imageHeight;
@@ -129,7 +134,9 @@ public class Tools {
             throw new RuntimeException(e);
         }
         BufferedImage resizedImage = Scalr.resize(bufferedImage, Scalr.Method.SPEED, fixedImageWidth, newImageHeight);
-
+        if (isImagePortrait) {
+            resizedImage = Scalr.rotate(resizedImage, Scalr.Rotation.CW_270);
+        }
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
@@ -150,5 +157,24 @@ public class Tools {
         }
         return baos.toByteArray();
 
+    }
+
+    public boolean isImagePortrait(byte[] imageBytes) {
+        try (InputStream inputStream = new ByteArrayInputStream(imageBytes)) {
+            Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
+
+            ExifIFD0Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+
+            if (directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
+                int orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
+
+                // 6 and 8 correspond to portrait mode for various camera orientations
+                return orientation == 6 || orientation == 8;
+            }
+
+            return false;
+        } catch (Exception e) {
+            throw new RuntimeException("Error reading image metadata: " + e.getMessage(), e);
+        }
     }
 }
