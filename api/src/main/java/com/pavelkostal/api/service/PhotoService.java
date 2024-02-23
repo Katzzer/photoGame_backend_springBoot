@@ -8,8 +8,9 @@ import com.pavelkostal.api.repository.PhotoRepository;
 import com.pavelkostal.api.tools.GPSPositionTools;
 import com.pavelkostal.api.tools.TokenTool;
 import com.pavelkostal.api.tools.Tools;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class PhotoService {
 
@@ -33,17 +34,20 @@ public class PhotoService {
     private final TokenTool tokenTool;
     private final Tools tools;
 
+    @Value("${save-photo-path}")
+    private String savePhotoPath;
+
     public ResponseEntity<ResponsePhoto> savePhoto(String bearerToken, MultipartFile multipartFile, Photo photo) {
         setPhotoOwnerFromToken(photo, bearerToken);
 
         ResponseEntity<ResponsePhoto> errorResponse = validatePhoto(photo);
         if (errorResponse != null) return errorResponse;
 
-        updatePhotoPosition(photo);
+        gpsPositionTools.setPositionInformationFromGpsOrCityToCurrentPhoto(photo);
 
-        Photo savedPhoto = saveToRepository(photo);
+        Photo savedPhoto = photoRepository.save(photo);
 
-        savePhotoWithThumbnail(multipartFile, savedPhoto.getId());
+        tools.savePhotoWithThumbnail(multipartFile, savedPhoto.getId());
 
         return createSuccessResponse(savedPhoto.getId());
     }
@@ -64,18 +68,6 @@ public class PhotoService {
             return createErrorResponse(ResponseMessages.NO_GPS_NOR_CITY);
         }
         return null;
-    }
-
-    private void updatePhotoPosition(Photo photo) {
-        gpsPositionTools.setPositionInformationFromGpsOrCityToCurrentPhoto(photo);
-    }
-
-    private Photo saveToRepository(Photo photo) {
-        return photoRepository.save(photo);
-    }
-
-    private void savePhotoWithThumbnail(MultipartFile multipartFile, long savedPhotoId) {
-        tools.savePhotoWithThumbnail(multipartFile, savedPhotoId);
     }
 
     private ResponseEntity<ResponsePhoto> createErrorResponse(ResponseMessages responseMessage) {
@@ -118,7 +110,7 @@ public class PhotoService {
 
         byte[] imageAsBytes;
         try {
-            imageAsBytes = Files.readAllBytes(Paths.get("R:\\" + imageName));
+            imageAsBytes = Files.readAllBytes(Paths.get(savePhotoPath + imageName));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

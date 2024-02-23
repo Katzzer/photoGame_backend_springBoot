@@ -3,8 +3,9 @@ package com.pavelkostal.api.tools;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifIFD0Directory;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.imgscalr.Scalr;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,8 +21,11 @@ import java.util.Iterator;
 import java.util.List;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class Tools {
+
+    @Value("${save-photo-path}")
+    private String savePhotoPath;
 
     public List<String> replaceUnderscoreWithSpaceForString(List<String> listOfCity) {
         List<String> newList = new ArrayList<>();
@@ -102,7 +106,7 @@ public class Tools {
         resizedIMage = rotateResizedImageIfOriginalIsPortrait(originalImage, resizedIMage);
 
         String imageName = savedPhotoId + fileSuffix;
-        File targetFile = new File("r:\\" + imageName);
+        File targetFile = new File(savePhotoPath + imageName);
 
         try (OutputStream outStream = new FileOutputStream(targetFile)) {
             outStream.write(resizedIMage);
