@@ -8,11 +8,15 @@ import org.imgscalr.Scalr;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Component
@@ -56,9 +60,10 @@ public class Tools {
     }
 
     public void savePhotoWithThumbnail(MultipartFile multipartFile, long savedPhotoId) {
-        byte[] bufferedImage = getBytesFromMultipartFile(multipartFile);
-        savePhoto(bufferedImage, savedPhotoId);
-        savePhotoThumbnail(bufferedImage, savedPhotoId);
+        byte[] originalImage = getBytesFromMultipartFile(multipartFile);
+        savePhoto(originalImage, savedPhotoId, ".jpeg", 1000); // for savePhoto
+        savePhoto(originalImage, savedPhotoId, "_mobileVersion.jpeg", 500); // for savePhotoMobileVersion
+        savePhoto(originalImage, savedPhotoId, "_thumbnail.jpeg", 10); // for savePhotoThumbnail
     }
 
     private byte[] getBytesFromMultipartFile(MultipartFile multipartFile) {
@@ -84,67 +89,73 @@ public class Tools {
         return buffer;
     }
 
-    private void savePhoto(byte[] bufferedImage, long savedPhotoId) {
-        String imageName = savedPhotoId + ".jpeg";
+    private void savePhoto(byte[] originalImage, long savedPhotoId, String fileSuffix, float targetSizeInKB) {
+        byte[] resizedIMage = originalImage;
+        if (targetSizeInKB < 500) {
+            resizedIMage = resizeImageForThumbnail(originalImage);
+        }
+
+        if (getImageSizeInKB(originalImage) > targetSizeInKB) {
+            resizedIMage = compressImageToGivenSize(originalImage, targetSizeInKB);
+        }
+
+        resizedIMage = rotateResizedImageIfOriginalIsPortrait(originalImage, resizedIMage);
+
+        String imageName = savedPhotoId + fileSuffix;
         File targetFile = new File("r:\\" + imageName);
 
         try (OutputStream outStream = new FileOutputStream(targetFile)) {
-            outStream.write(bufferedImage);
+            outStream.write(resizedIMage);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void savePhotoThumbnail(byte[] bufferedImage, long savedPhotoId) {
-        byte[] thumbnail = createThumbnail(bufferedImage);
-        String thumbnailImageName = savedPhotoId + "_thumbnail.jpeg";
-        File thumbnailtargetFile = new File("r:\\" + thumbnailImageName);
-
-        try (OutputStream outStream = new FileOutputStream(thumbnailtargetFile)) {
-            outStream.write(thumbnail);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private byte[] createThumbnail(byte[] originalImage) {
-        InputStream helperInputStream = new ByteArrayInputStream(originalImage);
-        InputStream inputStream = new ByteArrayInputStream(originalImage);
-        boolean isImagePortrait = isImagePortrait(originalImage);
-
-        int imageWidth;
-        int imageHeight;
-        try {
-            BufferedImage read = ImageIO.read(helperInputStream); // stream is closed after reading : https://docs.oracle.com/javase/7/docs/api/javax/imageio/ImageIO.html#read%28java.io.InputStream%29
-            imageWidth = read.getWidth();
-            imageHeight = read.getHeight();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        int fixedImageWidth = 100;
-
-        double ratio = imageWidth / (double) fixedImageWidth;
-        int newImageHeight = (int) (imageHeight / ratio);
-
+    public byte[] compressImageToGivenSize(byte[] originalImage, float targetSizeInKB) {
         BufferedImage bufferedImage;
-        try {
+
+        try (InputStream inputStream = new ByteArrayInputStream(originalImage)) {
             bufferedImage = ImageIO.read(inputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        BufferedImage resizedImage = Scalr.resize(bufferedImage, Scalr.Method.SPEED, fixedImageWidth, newImageHeight);
-        if (isImagePortrait) {
-            resizedImage = Scalr.rotate(resizedImage, Scalr.Rotation.CW_270);
-        }
 
+        float quality = 1.0f;
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] finalImageBytes = null;
+
         try {
-            ImageIO.write(resizedImage, "jpeg", byteArrayOutputStream);
+            do {
+                byteArrayOutputStream.reset();
+                float compressedImageSizeInKB = compressImage(bufferedImage, quality, byteArrayOutputStream);
+                if (compressedImageSizeInKB <= targetSizeInKB) {
+                    finalImageBytes = byteArrayOutputStream.toByteArray();
+                    break;
+                }
+                quality -= 0.1f;
+            } while (quality > 0.1f);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return byteArrayOutputStream.toByteArray();
+
+        return finalImageBytes != null ? finalImageBytes : byteArrayOutputStream.toByteArray();
+    }
+
+    private float compressImage(BufferedImage image, float quality, ByteArrayOutputStream outputStream) throws IOException {
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
+        ImageWriter writer = writers.next();
+
+        ImageWriteParam param = writer.getDefaultWriteParam();
+        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        param.setCompressionQuality(quality);
+
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(outputStream)) {
+            writer.setOutput(ios);
+            writer.write(null, new IIOImage(image, null, null), param);
+            writer.dispose();
+        }
+
+        return outputStream.size() / 1024.0f;
     }
 
     public byte[] toByteArray(BufferedImage bi, String format) {
@@ -159,8 +170,8 @@ public class Tools {
 
     }
 
-    public boolean isImagePortrait(byte[] imageBytes) {
-        try (InputStream inputStream = new ByteArrayInputStream(imageBytes)) {
+    public byte[] rotateResizedImageIfOriginalIsPortrait(byte[] originalImageBytes, byte[] resizedImageBytes) {
+        try (InputStream inputStream = new ByteArrayInputStream(originalImageBytes)) {
             Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
 
             ExifIFD0Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
@@ -169,12 +180,68 @@ public class Tools {
                 int orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
 
                 // 6 and 8 correspond to portrait mode for various camera orientations
-                return orientation == 6 || orientation == 8;
+                if (orientation == 6 || orientation == 8) {
+                    BufferedImage image;
+
+                    try (InputStream inputStreamRezied = new ByteArrayInputStream(resizedImageBytes)) {
+                        image = ImageIO.read(inputStreamRezied);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error reading resized image: " + e.getMessage(), e);
+                    }
+
+                    BufferedImage rotatedImage = Scalr.rotate(image, Scalr.Rotation.CW_270);
+
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+                    ImageIO.write(rotatedImage, "jpeg", outputStream);
+
+                    return outputStream.toByteArray();
+                }
             }
 
-            return false;
+            return resizedImageBytes;
         } catch (Exception e) {
             throw new RuntimeException("Error reading image metadata: " + e.getMessage(), e);
         }
+    }
+
+    private double getImageSizeInKB(byte[] imageBytes) {
+        return imageBytes.length / 1024.0;
+    }
+
+    private byte[] resizeImageForThumbnail(byte[] originalImage) {
+        InputStream helperInputStream = new ByteArrayInputStream(originalImage);
+        InputStream inputStream = new ByteArrayInputStream(originalImage);
+
+        int imageWidth;
+        int imageHeight;
+        try {
+            BufferedImage read = ImageIO.read(helperInputStream); // stream is closed after reading : https://docs.oracle.com/javase/7/docs/api/javax/imageio/ImageIO.html#read%28java.io.InputStream%29
+            imageWidth = read.getWidth();
+            imageHeight = read.getHeight();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        int fixedImageWidth = 200;
+
+        double ratio = imageWidth / (double) fixedImageWidth;
+        int newImageHeight = (int) (imageHeight / ratio);
+
+        BufferedImage bufferedImage;
+        try {
+            bufferedImage = ImageIO.read(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        BufferedImage resizedImage = Scalr.resize(bufferedImage, Scalr.Method.SPEED, fixedImageWidth, newImageHeight);
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(resizedImage, "jpeg", byteArrayOutputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return byteArrayOutputStream.toByteArray();
     }
 }

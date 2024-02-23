@@ -34,31 +34,72 @@ public class PhotoService {
     private final Tools tools;
 
     public ResponseEntity<ResponsePhoto> savePhoto(String bearerToken, MultipartFile multipartFile, Photo photo) {
+        setPhotoOwnerFromToken(photo, bearerToken);
+
+        ResponseEntity<ResponsePhoto> errorResponse = validatePhoto(photo);
+        if (errorResponse != null) return errorResponse;
+
+        updatePhotoPosition(photo);
+
+        Photo savedPhoto = saveToRepository(photo);
+
+        savePhotoWithThumbnail(multipartFile, savedPhoto.getId());
+
+        return createSuccessResponse(savedPhoto.getId());
+    }
+
+    private void setPhotoOwnerFromToken(Photo photo, String bearerToken) {
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
         photo.setPhotoOwner(uniqueUserId);
+    }
 
+    private ResponseEntity<ResponsePhoto> validatePhoto(Photo photo) {
         if (!gpsPositionTools.isValidGps(photo.getGpsPositionLatitude(), photo.getGpsPositionLongitude())) {
             log.warn(ResponseMessages.INVALID_GPS.toString());
-            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS.toString()), HttpStatus.BAD_REQUEST);
+            return createErrorResponse(ResponseMessages.INVALID_GPS);
         }
 
         if (photo.getGpsPositionLatitude() == null && photo.getGpsPositionLongitude() == null && photo.getCity() == null) {
             log.warn(ResponseMessages.NO_GPS_NOR_CITY.toString());
-            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.NO_GPS_NOR_CITY.toString()), HttpStatus.BAD_REQUEST);
+            return createErrorResponse(ResponseMessages.NO_GPS_NOR_CITY);
         }
+        return null;
+    }
 
+    private void updatePhotoPosition(Photo photo) {
         gpsPositionTools.setPositionInformationFromGpsOrCityToCurrentPhoto(photo);
+    }
 
-        Photo savedPhoto = photoRepository.save(photo);
-        long savedPhotoId = savedPhoto.getId();
+    private Photo saveToRepository(Photo photo) {
+        return photoRepository.save(photo);
+    }
 
+    private void savePhotoWithThumbnail(MultipartFile multipartFile, long savedPhotoId) {
         tools.savePhotoWithThumbnail(multipartFile, savedPhotoId);
+    }
 
+    private ResponseEntity<ResponsePhoto> createErrorResponse(ResponseMessages responseMessage) {
+        return new ResponseEntity<>(new ResponsePhotoSaved(null, responseMessage.toString()), HttpStatus.BAD_REQUEST);
+    }
+
+    private ResponseEntity<ResponsePhoto> createSuccessResponse(long savedPhotoId) {
         ResponsePhotoSaved response = new ResponsePhotoSaved(savedPhotoId, ResponseMessages.PHOTO_SAVED.toString());
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
 
-    public ResponseEntity<byte[]> getPhotoById(long imageId, boolean getThumbnail) throws IOException {
+    public ResponseEntity<byte[]> getPhotoById(long imageId) {
+        return getPhotoById(imageId, false, false);
+    }
+
+    public ResponseEntity<byte[]> getThumbnailPhotoById(long imageId) {
+        return getPhotoById(imageId, true, false);
+    }
+
+    public ResponseEntity<byte[]> getMobilePhotoById(long imageId) {
+        return getPhotoById(imageId, false, true);
+    }
+
+    private ResponseEntity<byte[]> getPhotoById(long imageId, boolean getThumbnail, boolean getPhotoForMobile) {
         Optional<Photo> photoById = photoRepository.findById(imageId);
         // TODO: check if user has access to this photo
 
@@ -69,10 +110,18 @@ public class PhotoService {
         String extension = ".jpeg";
         if (getThumbnail) {
             extension = "_thumbnail.jpeg";
+        } else if (getPhotoForMobile) {
+            extension = "_mobileVersion.jpeg";
         }
 
         String imageName = imageId + extension;
-        byte[] imageAsBytes = Files.readAllBytes(Paths.get("R:\\" + imageName));
+
+        byte[] imageAsBytes;
+        try {
+            imageAsBytes = Files.readAllBytes(Paths.get("R:\\" + imageName));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         return ResponseEntity
                 .ok()
