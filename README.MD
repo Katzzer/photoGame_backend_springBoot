@@ -6,6 +6,7 @@
 
 ## Module description
 - api - used for api communication
+- if used profile `h2` (a h2 database) than couples of photos are saved to database and images are saved to `temp` directory when app shutdown all images in `temp` directories are deleted
 
 ## How to run this application
 - Run module `api`, it runs on port 8080
