@@ -8,8 +8,9 @@ import com.pavelkostal.api.repository.PhotoRepository;
 import com.pavelkostal.api.tools.GPSPositionTools;
 import com.pavelkostal.api.tools.TokenTool;
 import com.pavelkostal.api.tools.Tools;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class PhotoService {
 
@@ -33,32 +34,64 @@ public class PhotoService {
     private final TokenTool tokenTool;
     private final Tools tools;
 
+    @Value("${save-photo-path}")
+    private String savePhotoPath;
+
     public ResponseEntity<ResponsePhoto> savePhoto(String bearerToken, MultipartFile multipartFile, Photo photo) {
-        String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
-        photo.setPhotoOwner(uniqueUserId);
+        setPhotoOwnerFromToken(photo, bearerToken);
 
-        if (!gpsPositionTools.isValidGps(photo.getGpsPositionLatitude(), photo.getGpsPositionLongitude())) {
-            log.warn(ResponseMessages.INVALID_GPS.toString());
-            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.INVALID_GPS.toString()), HttpStatus.BAD_REQUEST);
-        }
-
-        if (photo.getGpsPositionLatitude() == null && photo.getGpsPositionLongitude() == null && photo.getCity() == null) {
-            log.warn(ResponseMessages.NO_GPS_NOR_CITY.toString());
-            return new ResponseEntity<>(new ResponsePhotoSaved(null, ResponseMessages.NO_GPS_NOR_CITY.toString()), HttpStatus.BAD_REQUEST);
-        }
+        ResponseEntity<ResponsePhoto> errorResponse = validatePhoto(photo);
+        if (errorResponse != null) return errorResponse;
 
         gpsPositionTools.setPositionInformationFromGpsOrCityToCurrentPhoto(photo);
 
         Photo savedPhoto = photoRepository.save(photo);
-        long savedPhotoId = savedPhoto.getId();
 
-        tools.savePhotoWithThumbnail(multipartFile, savedPhotoId);
+        tools.savePhotoWithThumbnail(multipartFile, savedPhoto.getId());
 
+        return createSuccessResponse(savedPhoto.getId());
+    }
+
+    private void setPhotoOwnerFromToken(Photo photo, String bearerToken) {
+        String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
+        photo.setPhotoOwner(uniqueUserId);
+    }
+
+    private ResponseEntity<ResponsePhoto> validatePhoto(Photo photo) {
+        if (!gpsPositionTools.isValidGps(photo.getGpsPositionLatitude(), photo.getGpsPositionLongitude())) {
+            log.warn(ResponseMessages.INVALID_GPS.toString());
+            return createErrorResponse(ResponseMessages.INVALID_GPS);
+        }
+
+        if (photo.getGpsPositionLatitude() == null && photo.getGpsPositionLongitude() == null && photo.getCity() == null) {
+            log.warn(ResponseMessages.NO_GPS_NOR_CITY.toString());
+            return createErrorResponse(ResponseMessages.NO_GPS_NOR_CITY);
+        }
+        return null;
+    }
+
+    private ResponseEntity<ResponsePhoto> createErrorResponse(ResponseMessages responseMessage) {
+        return new ResponseEntity<>(new ResponsePhotoSaved(null, responseMessage.toString()), HttpStatus.BAD_REQUEST);
+    }
+
+    private ResponseEntity<ResponsePhoto> createSuccessResponse(long savedPhotoId) {
         ResponsePhotoSaved response = new ResponsePhotoSaved(savedPhotoId, ResponseMessages.PHOTO_SAVED.toString());
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
 
-    public ResponseEntity<byte[]> getPhotoById(long imageId, boolean getThumbnail) throws IOException {
+    public ResponseEntity<byte[]> getPhotoById(long imageId) {
+        return getPhotoById(imageId, false, false);
+    }
+
+    public ResponseEntity<byte[]> getThumbnailPhotoById(long imageId) {
+        return getPhotoById(imageId, true, false);
+    }
+
+    public ResponseEntity<byte[]> getMobilePhotoById(long imageId) {
+        return getPhotoById(imageId, false, true);
+    }
+
+    private ResponseEntity<byte[]> getPhotoById(long imageId, boolean getThumbnail, boolean getPhotoForMobile) {
         Optional<Photo> photoById = photoRepository.findById(imageId);
         // TODO: check if user has access to this photo
 
@@ -69,10 +102,18 @@ public class PhotoService {
         String extension = ".jpeg";
         if (getThumbnail) {
             extension = "_thumbnail.jpeg";
+        } else if (getPhotoForMobile) {
+            extension = "_mobileVersion.jpeg";
         }
 
         String imageName = imageId + extension;
-        byte[] imageAsBytes = Files.readAllBytes(Paths.get("R:\\" + imageName));
+
+        byte[] imageAsBytes;
+        try {
+            imageAsBytes = Files.readAllBytes(Paths.get(savePhotoPath + imageName));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         return ResponseEntity
                 .ok()

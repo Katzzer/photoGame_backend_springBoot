@@ -9,7 +9,6 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -40,13 +39,18 @@ public class ApiController {
     }
 
     @GetMapping("/photo/{photoId}")
-    public ResponseEntity<byte[]> getImageById(@PathVariable("photoId") Long imageId) throws IOException {
-       return photoService.getPhotoById(imageId, false);
+    public ResponseEntity<byte[]> getPhotoById(@PathVariable("photoId") Long imageId) {
+       return photoService.getPhotoById(imageId);
+    }
+
+    @GetMapping("/photo-for-mobile/{photoId}")
+    public ResponseEntity<byte[]> getPhotoForMobileById(@PathVariable("photoId") Long photoId)  {
+        return photoService.getMobilePhotoById(photoId);
     }
 
     @GetMapping("/photo/thumbnail/{photoId}")
-    public ResponseEntity<byte[]> getImageThumbnailById(@PathVariable("photoId") Long photoId) throws IOException {
-        return photoService.getPhotoById(photoId, true);
+    public ResponseEntity<byte[]> getImageThumbnailById(@PathVariable("photoId") Long photoId) {
+        return photoService.getThumbnailPhotoById(photoId);
     }
 
     @GetMapping("/photos/all-photos-for-current-user")
@@ -69,5 +73,4 @@ public class ApiController {
         return photoService.findAllPhotosByCountryAndCity(country, city);
     }
 
-    
 }

@@ -83,10 +83,10 @@ class ApiControllerTest {
     private static final String IMAGE_FILE_NAME = "image.jpg";
 
     @BeforeEach
-    public void beforeEach() throws IOException, URISyntaxException {
+    public void beforeEach() throws IOException {
         BufferedImage photo;
         URL url = getClass().getResource(IMAGE_FILE_NAME);
-        File file = Paths.get(url.toURI()).toFile();
+        File file = convertUrlToFile(url);
         photo = ImageIO.read(file);
 
         photo1 = new Photo("123", 50.2092567, 15.8327564,"Hradec Kralove",null, null, null, null);
@@ -127,7 +127,7 @@ class ApiControllerTest {
 
         // When
         byte[] body = new byte[0];
-        when(photoService.getPhotoById(1L, false)).thenReturn(
+        when(photoService.getPhotoById(1L)).thenReturn(
         ResponseEntity
                 .ok()
                 .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
@@ -147,12 +147,12 @@ class ApiControllerTest {
     @DisplayName("Test images ID endpoint for current user ")
     @WithMockUser
     void itShouldTestGetImagesEndPoint() throws Exception {
-        Photo photo2 = new Photo("123", 50.2092567, 15.8327564, "Nove Mesto",null, null, null, null);
-        List<Photo> allImagesForUser = List.of(photo1, photo2);
+//        Photo photo2 = new Photo("123", 50.2092567, 15.8327564, "Nove Mesto",null, null, null, null);
+//        List<Photo> allImagesForUser = List.of(photo1, photo2);
 
         // When
         byte[] body = new byte[0]; // TODO: remove duplicate code
-        when(photoService.getPhotoById(1L, false)).thenReturn(
+        when(photoService.getPhotoById(1L)).thenReturn(
                 ResponseEntity
                         .ok()
                         .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
@@ -172,7 +172,7 @@ class ApiControllerTest {
         // Given
         // When
         byte[] body = new byte[0]; // TODO: remove duplicate code
-        when(photoService.getPhotoById(1L, false)).thenReturn(
+        when(photoService.getPhotoById(1L)).thenReturn(
                 ResponseEntity
                         .ok()
                         .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
@@ -192,7 +192,7 @@ class ApiControllerTest {
         // Given
         // When
         byte[] body = new byte[0]; // TODO: remove duplicate code
-        when(photoService.getPhotoById(1L, false)).thenReturn(
+        when(photoService.getPhotoById(1L)).thenReturn(
                 ResponseEntity
                         .ok()
                         .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
@@ -212,7 +212,7 @@ class ApiControllerTest {
         // Given
         // When
         byte[] body = new byte[0]; // TODO: remove duplicate code
-        when(photoService.getPhotoById(1L, false)).thenReturn(
+        when(photoService.getPhotoById(1L)).thenReturn(
                 ResponseEntity
                         .ok()
                         .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
@@ -324,6 +324,17 @@ class ApiControllerTest {
         this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/find-photos-by-location")).andDo(print()).andExpect(status().is4xxClientError());
         this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/find-photos-by-location/someCountry")).andDo(print()).andExpect(status().is4xxClientError());
         this.mockMvc.perform(MockMvcRequestBuilders.post(serverUrl + "/find-photos-by-location/someCountry/someCity")).andDo(print()).andExpect(status().is4xxClientError());
+    }
+
+    private File convertUrlToFile(URL url) {
+        if(url == null) {
+            throw new IllegalArgumentException("The URL provided is null");
+        }
+        try {
+            return Paths.get(url.toURI()).toFile();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Invalid URL", e);
+        }
     }
 
 }
