@@ -4,6 +4,7 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class Tools {
 
     @Value("${save-photo-path}")
@@ -65,9 +67,9 @@ public class Tools {
 
     public void savePhotoWithThumbnail(MultipartFile multipartFile, long savedPhotoId) {
         byte[] originalImage = getBytesFromMultipartFile(multipartFile);
-        savePhoto(originalImage, savedPhotoId, ".jpeg", 1000); // for savePhoto
-        savePhoto(originalImage, savedPhotoId, "_mobileVersion.jpeg", 500); // for savePhotoMobileVersion
-        savePhoto(originalImage, savedPhotoId, "_thumbnail.jpeg", 10); // for savePhotoThumbnail
+        savePhoto(originalImage, savedPhotoId, ".jpeg", 1000, 1000); // for savePhoto
+        savePhoto(originalImage, savedPhotoId, "_mobileVersion.jpeg", 500, 800); // for savePhotoMobileVersion
+        savePhoto(originalImage, savedPhotoId, "_thumbnail.jpeg", 10, 300); // for savePhotoThumbnail
     }
 
     private byte[] getBytesFromMultipartFile(MultipartFile multipartFile) {
@@ -93,29 +95,27 @@ public class Tools {
         return buffer;
     }
 
-    private void savePhoto(byte[] originalImage, long savedPhotoId, String fileSuffix, float targetSizeInKB) {
-        byte[] resizedIMage = originalImage;
-        if (targetSizeInKB < 500) {
-            resizedIMage = resizeImageForThumbnail(originalImage);
+    private void savePhoto(byte[] originalImage, long savedPhotoId, String fileSuffix, float targetSizeInKB, int desiredImageWidth) {
+        byte[] resizedPhoto = resizePhoto(originalImage, desiredImageWidth);
+
+        if (getPhotoSizeInKB(resizedPhoto) > targetSizeInKB) {
+            resizedPhoto = compressPhotoToGivenSize(resizedPhoto, targetSizeInKB);
         }
 
-        if (getImageSizeInKB(originalImage) > targetSizeInKB) {
-            resizedIMage = compressImageToGivenSize(originalImage, targetSizeInKB);
-        }
-
-        resizedIMage = rotateResizedImageIfOriginalIsPortrait(originalImage, resizedIMage);
+        resizedPhoto = rotateResizedImageIfOriginalIsPortrait(originalImage, resizedPhoto);
 
         String imageName = savedPhotoId + fileSuffix;
         File targetFile = new File(savePhotoPath + imageName);
 
         try (OutputStream outStream = new FileOutputStream(targetFile)) {
-            outStream.write(resizedIMage);
+            outStream.write(resizedPhoto);
+            log.info("Saving image to: {}{}, size is {} kBs", savePhotoPath, imageName, getPhotoSizeInKB(resizedPhoto));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public byte[] compressImageToGivenSize(byte[] originalImage, float targetSizeInKB) {
+    public byte[] compressPhotoToGivenSize(byte[] originalImage, float targetSizeInKB) {
         BufferedImage bufferedImage;
 
         try (InputStream inputStream = new ByteArrayInputStream(originalImage)) {
@@ -131,7 +131,7 @@ public class Tools {
         try {
             do {
                 byteArrayOutputStream.reset();
-                float compressedImageSizeInKB = compressImage(bufferedImage, quality, byteArrayOutputStream);
+                float compressedImageSizeInKB = compressPhoto(bufferedImage, quality, byteArrayOutputStream);
                 if (compressedImageSizeInKB <= targetSizeInKB) {
                     finalImageBytes = byteArrayOutputStream.toByteArray();
                     break;
@@ -145,7 +145,7 @@ public class Tools {
         return finalImageBytes != null ? finalImageBytes : byteArrayOutputStream.toByteArray();
     }
 
-    private float compressImage(BufferedImage image, float quality, ByteArrayOutputStream outputStream) throws IOException {
+    private float compressPhoto(BufferedImage image, float quality, ByteArrayOutputStream outputStream) throws IOException {
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
         ImageWriter writer = writers.next();
 
@@ -174,7 +174,7 @@ public class Tools {
 
     }
 
-    public byte[] rotateResizedImageIfOriginalIsPortrait(byte[] originalImageBytes, byte[] resizedImageBytes) {
+    private byte[] rotateResizedImageIfOriginalIsPortrait(byte[] originalImageBytes, byte[] resizedImageBytes) {
         try (InputStream inputStream = new ByteArrayInputStream(originalImageBytes)) {
             Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
 
@@ -187,8 +187,8 @@ public class Tools {
                 if (orientation == 6 || orientation == 8) {
                     BufferedImage image;
 
-                    try (InputStream inputStreamRezied = new ByteArrayInputStream(resizedImageBytes)) {
-                        image = ImageIO.read(inputStreamRezied);
+                    try (InputStream inputStreamResized = new ByteArrayInputStream(resizedImageBytes)) {
+                        image = ImageIO.read(inputStreamResized);
                     } catch (IOException e) {
                         throw new RuntimeException("Error reading resized image: " + e.getMessage(), e);
                     }
@@ -209,28 +209,30 @@ public class Tools {
         }
     }
 
-    private double getImageSizeInKB(byte[] imageBytes) {
-        return imageBytes.length / 1024.0;
+    private long getPhotoSizeInKB(byte[] imageBytes) {
+        return Math.round(imageBytes.length / 1024.0);
     }
 
-    private byte[] resizeImageForThumbnail(byte[] originalImage) {
+    private byte[] resizePhoto(byte[] originalImage, int desiredImageWidth) {
         InputStream helperInputStream = new ByteArrayInputStream(originalImage);
         InputStream inputStream = new ByteArrayInputStream(originalImage);
 
-        int imageWidth;
-        int imageHeight;
+        int originalImageWidth;
+        int originalImageHeight;
         try {
             BufferedImage read = ImageIO.read(helperInputStream); // stream is closed after reading : https://docs.oracle.com/javase/7/docs/api/javax/imageio/ImageIO.html#read%28java.io.InputStream%29
-            imageWidth = read.getWidth();
-            imageHeight = read.getHeight();
+            originalImageWidth = read.getWidth();
+            originalImageHeight = read.getHeight();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        int fixedImageWidth = 200;
+        if (originalImageWidth < desiredImageWidth) { // do not resize if originalImageWidth < desiredImageWidth
+            return originalImage;
+        }
 
-        double ratio = imageWidth / (double) fixedImageWidth;
-        int newImageHeight = (int) (imageHeight / ratio);
+        double ratio = originalImageWidth / (double) desiredImageWidth;
+        int newImageHeight = (int) (originalImageHeight / ratio);
 
         BufferedImage bufferedImage;
         try {
@@ -238,7 +240,7 @@ public class Tools {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        BufferedImage resizedImage = Scalr.resize(bufferedImage, Scalr.Method.SPEED, fixedImageWidth, newImageHeight);
+        BufferedImage resizedImage = Scalr.resize(bufferedImage, Scalr.Method.SPEED, desiredImageWidth, newImageHeight);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
