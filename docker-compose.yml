@@ -23,6 +23,7 @@ services:
       - SPRING_PROFILES_ACTIVE=h2
       - SPRING_OUTPUT_ANSI_ENABLED=ALWAYS
       - LOGGING_LEVEL_COM_PAVELKOSTAL_API=DEBUG
+    network_mode: "host"
 #    networks:
 #      - spring
 #      - postgres
