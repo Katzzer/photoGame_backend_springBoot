@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
@@ -27,6 +28,9 @@ public class OnStart {
 
     private final PhotoRepository photoRepository;
     private final Tools tools;
+
+    @Value("${save-photo-path}")
+    private String savePhotoPath;
 
     public static final String DELETE_ALL_FILES_IN_TEMP_DIRECTORY_WHEN_APP_STARTS = "deleteAllFilesInOnTempDirectoryWhenAppStarts";
 
@@ -56,6 +60,37 @@ public class OnStart {
         tools.savePhotoWithThumbnail(convertFileToMultipartFile(image1), savedPhoto1.getId());
         tools.savePhotoWithThumbnail(convertFileToMultipartFile(image2), savedPhoto2.getId());
     }
+
+//    @Bean
+//    @Profile("dev")
+//    public void resizeAllAlreadySavedFiles() {
+//        List<Path> fileList = new ArrayList<>();
+//        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(savePhotoPath))) {
+//            for (Path path : stream) {
+//                if (!Files.isDirectory(path)) {
+//                    fileList.add(path);
+//                }
+//            }
+//        } catch(IOException e) {
+//            throw new RuntimeException("Error while accessing directory", e);
+//        }
+//
+//        List<Path> listOfMainPhotos = fileList.stream()
+//                .filter(file -> {
+//                    String fileName = file.getFileName().toString();
+//                    return fileName.matches("\\d+\\.jpeg");
+//                })
+//                .toList();
+//
+//        for (Path mainPhoto : listOfMainPhotos) {
+//            String photoNumber = mainPhoto.getFileName().toString().replace(".jpeg", "");
+//            Optional<Photo> photoOptional = photoRepository.findById(Long.valueOf(photoNumber));
+//            if (photoOptional.isPresent()) {
+//                Photo photoFromDb = photoOptional.get();
+//                tools.savePhotoWithThumbnail(convertFileToMultipartFile(mainPhoto.toFile()), photoFromDb.getId());
+//            }
+//        }
+//    }
 
     private void deleteAllFilesInOnTempDirectory() {
         File dir = new File("temp");
