@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
@@ -29,8 +28,8 @@ public class OnStart {
     private final PhotoRepository photoRepository;
     private final Tools tools;
 
-    @Value("${save-photo-path}")
-    private String savePhotoPath;
+//    @Value("${save-photo-path}")
+//    public String savePhotoPath;
 
     public static final String DELETE_ALL_FILES_IN_TEMP_DIRECTORY_WHEN_APP_STARTS = "deleteAllFilesInOnTempDirectoryWhenAppStarts";
 
@@ -95,7 +94,9 @@ public class OnStart {
     private void deleteAllFilesInOnTempDirectory() {
         File dir = new File("temp");
         try {
-            FileUtils.cleanDirectory(dir);
+            if (dir.exists()) {
+                FileUtils.cleanDirectory(dir);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
