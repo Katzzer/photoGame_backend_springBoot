@@ -17,6 +17,9 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -105,7 +108,20 @@ public class Tools {
         resizedPhoto = rotateResizedImageIfOriginalIsPortrait(originalImage, resizedPhoto);
 
         String imageName = savedPhotoId + fileSuffix;
-        File targetFile = new File(savePhotoPath + imageName);
+
+        Path directoryPath = Paths.get(savePhotoPath);
+
+        // Create directory if it does not exist
+        if (!Files.exists(directoryPath)) {
+            try {
+                Files.createDirectories(directoryPath);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        String targetFilePath = savePhotoPath + File.separator + imageName;
+        File targetFile = new File(targetFilePath);
 
         try (OutputStream outStream = new FileOutputStream(targetFile)) {
             outStream.write(resizedPhoto);
