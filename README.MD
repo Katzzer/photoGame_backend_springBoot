@@ -4,6 +4,14 @@
 - Add tests to JWT
 - Repair plugin for Docker in Maven
 
+## Connect on Linux to remote directory
+- [Manual](https://www.linode.com/docs/guides/linux-mount-smb-share/)
+- `sudo apt install cifs-utils psmisc`
+- `sudo mkdir /mnt/photoGamePhotos`
+- On Raspberry Pi default shared folder is `sambashare ` login is `guest` and password is `guest`
+- Mount directory `sudo mount -t cifs //192.168.1.20/sambashare /mnt/photoGamePhotos -o username=guest,password=guest,uid=1000,gid=1000,file_mode=0775,dir_mode=0775`
+- Use `dev` profile on linux
+
 ## Module description
 - api - used for api communication
 - if used profile `h2` (a h2 database) than couples of photos are saved to database and images are saved to `temp` directory when app shutdown all images in `temp` directories are deleted
