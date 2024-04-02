@@ -1,8 +1,9 @@
 # Photo Game - Backend Application written in Java with Spring Boot
 
 ## TODO
+- Add Sentry.io and send error to this services
 - Add tests to JWT
-- Repair plugin for Docker in Maven
+- ~~Repair plugin for Docker in Maven~~
 
 ## Connect on Linux to remote directory
 - [Manual](https://www.linode.com/docs/guides/linux-mount-smb-share/)
