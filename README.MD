@@ -11,7 +11,7 @@
 - `sudo mkdir /mnt/photoGamePhotos`
 - On Raspberry Pi default shared folder is `sambashare ` login is `guest` and password is `guest`
 - Mount directory `sudo mount -t cifs //192.168.1.20/sambashare /mnt/photoGamePhotos -o username=guest,password=guest,uid=1000,gid=1000,file_mode=0775,dir_mode=0775`
-- Use `dev` profile on linux
+- Use profile `linux` on Linux
 
 ## Module description
 - api - used for api communication
