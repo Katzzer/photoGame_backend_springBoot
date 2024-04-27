@@ -8,6 +8,7 @@ import com.pavelkostal.api.repository.PhotoRepository;
 import com.pavelkostal.api.tools.GPSPositionTools;
 import com.pavelkostal.api.tools.TokenTool;
 import com.pavelkostal.api.tools.Tools;
+import jakarta.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,10 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -34,9 +33,10 @@ public class PhotoService {
     private final GPSPositionTools gpsPositionTools;
     private final TokenTool tokenTool;
     private final Tools tools;
-
-    @Value("${save-photo-path}")
-    private String savePhotoPath;
+    private final CacheService cacheService;
+    
+    @Value("${caching-on-frontend-in-seconds}")
+    private Integer cachingOnFrontend;
 
     public ResponseEntity<ResponsePhoto> savePhoto(String bearerToken, MultipartFile multipartFile, Photo photo) {
         setPhotoOwnerFromToken(photo, bearerToken);
@@ -108,21 +108,16 @@ public class PhotoService {
         }
 
         String imageName = imageId + extension;
-
-        byte[] imageAsBytes;
-        try {
-            imageAsBytes = Files.readAllBytes(Paths.get(savePhotoPath + File.separator + imageName));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+        
+        byte[] imageAsBytes = cacheService.getImage(imageName);
+        
         return ResponseEntity
                 .ok()
-                .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
-//                .eTag(version)
+                .cacheControl(CacheControl.maxAge(cachingOnFrontend, TimeUnit.SECONDS))
+                .eTag(getImageHash(imageAsBytes))
                 .body(imageAsBytes);
     }
-
+    
     public ResponseEntity<List<Photo>> getAllPhotosForSelectedUser(String bearerToken) {
         String uniqueUserId = tokenTool.getUniqueUserId(bearerToken);
         List<Photo> allImagesForUser = photoRepository.findPhotosByUniqueUserId(uniqueUserId);
@@ -142,5 +137,17 @@ public class PhotoService {
     public ResponseEntity<List<Photo>> findAllPhotosByCountryAndCity(String country, String city) {
         List<Photo> allCountries = photoRepository.findAllPhotosByCountryAndCity(country, city);
         return new ResponseEntity<>(allCountries, HttpStatus.OK);
+    }
+    
+    private String getImageHash(byte[] imageAsBytes) {
+		MessageDigest md;
+		try {
+			md = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		}
+		md.update(imageAsBytes);
+        byte[] digest = md.digest();
+        return DatatypeConverter.printHexBinary(digest).toUpperCase();
     }
 }

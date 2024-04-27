@@ -4,6 +4,7 @@
 - Add Sentry.io and send error to this services
 - Add tests to JWT
 - ~~Repair plugin for Docker in Maven~~
+- Remove `application-linux.properties`  and replace `save-photo-path` in `application.properties`
 
 ## Connect on Linux to remote directory
 - [Manual](https://www.linode.com/docs/guides/linux-mount-smb-share/)
@@ -50,3 +51,13 @@
 - Api Access key is `9a78eefebbaee92c86702374251227ac`
 - Example request: `http://api.positionstack.com/v1/forward?access_key=9a78eefebbaee92c86702374251227ac&query=Hradec Kralove`
 
+## Caching in Redis
+- When user wants to get photo it will look into Redis and if it is there than it will return photo from Redis otherwise it will get from disk 
+- Cache is configured in [CacheService](api/src/main/java/com/pavelkostal/api/service/CacheService.java)
+
+### Notes to Redis
+- On frontend image is cached for 10 seconds. Value is configured in `application.properties` in `caching-on-frontend-in-seconds`
+- With there is could run multiple instance of this app behind load balancer and still use same cache
+(that isn´t possible if it were used only Spring Boot cache, every instance will have its own cache)
+- There is no `@CacheEvict`, no need yet.
+- To replace value in Redis it will be used `@CachePut` however now is not possible to change already uploaded image.
