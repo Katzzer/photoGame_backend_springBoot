@@ -61,3 +61,4 @@
 (that isn´t possible if it were used only Spring Boot cache, every instance will have its own cache)
 - There is no `@CacheEvict`, no need yet.
 - To replace value in Redis it will be used `@CachePut` however now is not possible to change already uploaded image.
+- To show keys go command line run `redis-cli` in Redis type `hkeys photoGame:photos`, they are stored in binary format
