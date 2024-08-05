@@ -11,3 +11,5 @@ buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
 temp/
+.terraform/
+.terraform.lock.hcl
