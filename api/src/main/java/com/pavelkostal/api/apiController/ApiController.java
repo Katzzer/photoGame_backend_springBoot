@@ -29,6 +29,12 @@ public class ApiController {
         return "Hello from Spring Boot Application Photo Game (" + now.format(dateTimeFormatter) +")";
     }
 
+    // jen pro testovani nezabezpeceneho endpointu
+    @GetMapping("/test")
+    public String test() {
+        return "Test";
+    }
+
     @PostMapping("/save-photo")
     public ResponseEntity<ResponsePhoto> savePhoto(
             @RequestHeader("Authorization") String bearerToken,

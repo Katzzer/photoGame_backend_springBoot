@@ -1,4 +1,4 @@
-package com.pavelkostal.api.tools;
+package com.pavelkostal.api.utils.tools;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.proc.BadJOSEException;

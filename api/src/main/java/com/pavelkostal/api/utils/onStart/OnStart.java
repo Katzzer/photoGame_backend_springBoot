@@ -1,8 +1,8 @@
-package com.pavelkostal.api.onStart;
+package com.pavelkostal.api.utils.onStart;
 
 import com.pavelkostal.api.entity.Photo;
 import com.pavelkostal.api.repository.PhotoRepository;
-import com.pavelkostal.api.tools.Tools;
+import com.pavelkostal.api.utils.tools.Tools;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

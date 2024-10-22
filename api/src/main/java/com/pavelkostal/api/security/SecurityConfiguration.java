@@ -20,7 +20,7 @@ public class SecurityConfiguration {
 				.cors().and()
 				.csrf().disable()
 				.authorizeHttpRequests((auth) -> auth
-						.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+						.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api/v1/data/test").permitAll()
 						.anyRequest().authenticated()
 				)
 				.addFilterBefore(awsCognitoJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

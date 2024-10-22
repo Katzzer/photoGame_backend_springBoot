@@ -1,4 +1,4 @@
-package com.pavelkostal.api.tools;
+package com.pavelkostal.api.utils.tools;
 
 import com.pavelkostal.api.entity.Photo;
 import com.pavelkostal.api.externalApiCalls.PositionStack;

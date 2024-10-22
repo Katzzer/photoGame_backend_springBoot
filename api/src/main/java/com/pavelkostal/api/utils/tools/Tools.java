@@ -1,4 +1,4 @@
-package com.pavelkostal.api.tools;
+package com.pavelkostal.api.utils.tools;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Metadata;
