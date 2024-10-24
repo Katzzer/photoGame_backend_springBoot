@@ -11,6 +11,8 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,17 +49,20 @@ public class OnStart {
     @Bean
     @DependsOn(DELETE_ALL_FILES_IN_TEMP_DIRECTORY_WHEN_APP_STARTS)
     @Profile("h2")
-    public void saveNewImagesToDatabase() {
-        File image1 = new File("images/image1.jpg");
-        File image2 = new File("images/image2.jpg");
+    public void saveNewImagesToDatabase() throws IOException {
+        // Načti obrázky ze složky resources/images/
+        Resource image1 = new ClassPathResource("images/image1.jpg");
+        Resource image2 = new ClassPathResource("images/image2.jpg");
+        
+        // Tvoje logika pro uložení obrázků do databáze
         Photo photo1 = new Photo("2d0a7d01-cb95-4ae2-89bd-93cb7ac7b8ba", 50.20923, 15.83277, "Hradec Kralove", "Czechia", "", "Czech Republic", "");
         Photo photo2 = new Photo("2d0a7d01-cb95-4ae2-89bd-93cb7ac7b8ba", 50.20923, 15.83277, "Hradec Kralove", "Czechia", "", "Czech Republic", "");
-
+        
         Photo savedPhoto1 = photoRepository.save(photo1);
         Photo savedPhoto2 = photoRepository.save(photo2);
-
-        tools.savePhotoWithThumbnail(convertFileToMultipartFile(image1), savedPhoto1.getId());
-        tools.savePhotoWithThumbnail(convertFileToMultipartFile(image2), savedPhoto2.getId());
+        
+        tools.savePhotoWithThumbnail(convertFileToMultipartFile(image1.getFile()), savedPhoto1.getId());
+        tools.savePhotoWithThumbnail(convertFileToMultipartFile(image2.getFile()), savedPhoto2.getId());
     }
 
 //    @Bean
