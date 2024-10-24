@@ -7,7 +7,6 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
@@ -18,9 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 @Component
 @RequiredArgsConstructor
@@ -50,19 +48,29 @@ public class OnStart {
     @DependsOn(DELETE_ALL_FILES_IN_TEMP_DIRECTORY_WHEN_APP_STARTS)
     @Profile("h2")
     public void saveNewImagesToDatabase() throws IOException {
-        // Načti obrázky ze složky resources/images/
+        // Load images from the resources/images/ folder
         Resource image1 = new ClassPathResource("images/image1.jpg");
         Resource image2 = new ClassPathResource("images/image2.jpg");
         
-        // Tvoje logika pro uložení obrázků do databáze
+        // Your logic to save the images to the database
         Photo photo1 = new Photo("2d0a7d01-cb95-4ae2-89bd-93cb7ac7b8ba", 50.20923, 15.83277, "Hradec Kralove", "Czechia", "", "Czech Republic", "");
         Photo photo2 = new Photo("2d0a7d01-cb95-4ae2-89bd-93cb7ac7b8ba", 50.20923, 15.83277, "Hradec Kralove", "Czechia", "", "Czech Republic", "");
         
         Photo savedPhoto1 = photoRepository.save(photo1);
         Photo savedPhoto2 = photoRepository.save(photo2);
         
-        tools.savePhotoWithThumbnail(convertFileToMultipartFile(image1.getFile()), savedPhoto1.getId());
-        tools.savePhotoWithThumbnail(convertFileToMultipartFile(image2.getFile()), savedPhoto2.getId());
+        tools.savePhotoWithThumbnail(convertInputStreamToMultipartFile(image1.getInputStream(), "image1.jpg"), savedPhoto1.getId());
+        tools.savePhotoWithThumbnail(convertInputStreamToMultipartFile(image2.getInputStream(), "image2.jpg"), savedPhoto2.getId());
+    }
+    
+    private MultipartFile convertInputStreamToMultipartFile(InputStream inputStream, String originalFileName) {
+        try {
+            // Create a new MockMultipartFile instance
+			return new MockMultipartFile(originalFileName, originalFileName, "image/jpeg", inputStream);
+        } catch (IOException e) {
+            log.error("Error occurred during conversion of InputStream to MultipartFile", e);
+            return null;
+        }
     }
 
 //    @Bean
@@ -107,25 +115,25 @@ public class OnStart {
         }
     }
 
-    private MultipartFile convertFileToMultipartFile(File file)  {
-        FileInputStream input;
-        try {
-            input = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            log.error("File not found !!!!!");
-            throw new RuntimeException(e);
-        }
-
-        MultipartFile multipartFile;
-        try {
-            multipartFile = new MockMultipartFile(
-                    "file",
-                    file.getName(),
-                    "image/jpeg",
-                    IOUtils.toByteArray(input));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return multipartFile;
-    }
+//    private MultipartFile convertFileToMultipartFile(File file)  {
+//        FileInputStream input;
+//        try {
+//            input = new FileInputStream(file);
+//        } catch (FileNotFoundException e) {
+//            log.error("File not found !!!!!");
+//            throw new RuntimeException(e);
+//        }
+//
+//        MultipartFile multipartFile;
+//        try {
+//            multipartFile = new MockMultipartFile(
+//                    "file",
+//                    file.getName(),
+//                    "image/jpeg",
+//                    IOUtils.toByteArray(input));
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//        return multipartFile;
+//    }
 }
