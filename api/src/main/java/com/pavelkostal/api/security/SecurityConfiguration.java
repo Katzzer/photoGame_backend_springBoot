@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
 @Configuration
 @AllArgsConstructor
 public class SecurityConfiguration {
@@ -20,10 +19,10 @@ public class SecurityConfiguration {
 				.cors().and()
 				.csrf().disable()
 				.authorizeHttpRequests((auth) -> auth
-						.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api/v1/data/test").permitAll()
-						.anyRequest().authenticated()
-				)
+						.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api/v1/data/test", "/actuator/health").permitAll()
+						.anyRequest().authenticated())
 				.addFilterBefore(awsCognitoJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
 		return http.build();
 	}
 
