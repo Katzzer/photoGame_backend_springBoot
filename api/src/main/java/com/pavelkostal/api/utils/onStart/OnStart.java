@@ -40,14 +40,15 @@ public class OnStart {
 
     @Bean(name = DELETE_ALL_FILES_IN_TEMP_DIRECTORY_WHEN_APP_STARTS)
     @Profile("h2")
-    public void deleteAllFilesInOnTempDirectoryWhenAppStarts() {
+    public Void deleteAllFilesInOnTempDirectoryWhenAppStarts() {
        deleteAllFilesInOnTempDirectory(); // if app didn't shut down correctly
+       return null;
     }
 
     @Bean
     @DependsOn(DELETE_ALL_FILES_IN_TEMP_DIRECTORY_WHEN_APP_STARTS)
     @Profile("h2")
-    public void saveNewImagesToDatabase() throws IOException {
+    public Void saveNewImagesToDatabase() throws IOException {
         // Load images from the resources/images/ folder
         Resource image1 = new ClassPathResource("images/image1.jpg");
         Resource image2 = new ClassPathResource("images/image2.jpg");
@@ -61,6 +62,7 @@ public class OnStart {
         
         tools.savePhotoWithThumbnail(convertInputStreamToMultipartFile(image1.getInputStream(), "image1.jpg"), savedPhoto1.getId());
         tools.savePhotoWithThumbnail(convertInputStreamToMultipartFile(image2.getInputStream(), "image2.jpg"), savedPhoto2.getId());
+        return null;
     }
     
     private MultipartFile convertInputStreamToMultipartFile(InputStream inputStream, String originalFileName) {
