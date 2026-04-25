@@ -6,12 +6,14 @@ import org.redisson.spring.cache.RedissonSpringCacheManager;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.HashMap;
 import java.util.Map;
 
 
 @Configuration
+@Profile("!h2")
 public class RedissonCacheConfig {
     
     @Bean
