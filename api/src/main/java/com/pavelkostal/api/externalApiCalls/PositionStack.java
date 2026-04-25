@@ -1,27 +1,35 @@
 package com.pavelkostal.api.externalApiCalls;
 
 import com.pavelkostal.api.model.PositionStackResponseDataWrapper;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 
-@FeignClient(
-        name = "PositionStack",
-        url = "http://api.positionstack.com/v1/"
-)
+@Component
+public class PositionStack {
 
-public interface PositionStack {
+    private final RestClient restClient = RestClient.builder()
+            .baseUrl("http://api.positionstack.com/v1/")
+            .build();
 
-    @GetMapping("forward")
-    PositionStackResponseDataWrapper getDataByCity(
-            @RequestParam(name = "access_key") String accessKey,
-            @RequestParam(name = "query") String query
-    );
+    public PositionStackResponseDataWrapper getDataByCity(String accessKey, String query) {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("forward")
+                        .queryParam("access_key", accessKey)
+                        .queryParam("query", query)
+                        .build())
+                .retrieve()
+                .body(PositionStackResponseDataWrapper.class);
+    }
 
-    @GetMapping("reverse")
-    PositionStackResponseDataWrapper getDataByGps(
-            @RequestParam(name = "access_key") String accessKey,
-            @RequestParam(name = "query") String query
-    );
-
+    public PositionStackResponseDataWrapper getDataByGps(String accessKey, String query) {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("reverse")
+                        .queryParam("access_key", accessKey)
+                        .queryParam("query", query)
+                        .build())
+                .retrieve()
+                .body(PositionStackResponseDataWrapper.class);
+    }
 }
